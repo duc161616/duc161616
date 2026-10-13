@@ -1,0 +1,92 @@
+# ARTEX behind bbguard, with container egress locked to the proxy.
+#
+#   cd deploy
+#   cp ../bbguard/scope.example.json data/scope.json   # then edit it
+#   docker compose up -d
+#
+# Why the networks are shaped this way: an intercept rule is a regex over a
+# command string, so a tool that ignores HTTP_PROXY (nmap, masscan) or a command
+# phrased slightly differently gets past it. The "internal: true" network is not
+# a regex — ARTEX's container has no route to the internet at all, and the only
+# host that does is bbguard. That is what makes the scope boundary real.
+#
+# Two settings inside ARTEX complete the chain (see ../BUG-HUNTER-SETUP.md):
+#   1. System settings -> global egress proxy = http://bbguard:8899
+#      (server/manager.go:262 "global_proxy"; the MITM proxy chains to it and,
+#      per traffic/traffic.go:170, even passthrough paths honour it)
+#   2. LLM proxy = http://bbguard:8899, because LLM calls deliberately ignore
+#      the proxy environment (agent/provider.go:404) — set ARTEX_LLM_PROXY
+#      below or the proxy field on the LLM profile (db/schema.sql:367).
+name: artex-bb
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-artex}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+      POSTGRES_DB: ${POSTGRES_DB:-artex}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-artex}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [internal]
+    restart: unless-stopped
+
+  bbguard:
+    build:
+      context: ../bbguard
+    command:
+      - -scope=/data/scope.json
+      - -addr=:8899
+      - -audit=/data/audit.jsonl
+      - -rps=${BB_RPS:-8}
+      - -burst=${BB_BURST:-16}
+      - -host-rps=${BB_HOST_RPS:-3}
+      - -host-burst=${BB_HOST_BURST:-6}
+    volumes:
+      - ./data:/data
+    # internal: serves ARTEX.  egress: the only route out of this project.
+    networks: [internal, egress]
+    restart: unless-stopped
+
+  artex:
+    build:
+      context: ../ARTEX
+    depends_on:
+      postgres:
+        condition: service_healthy
+      bbguard:
+        condition: service_started
+    environment:
+      ARTEX_PG_DSN: postgres://${POSTGRES_USER:-artex}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-artex}?sslmode=disable
+      # Tooling honours these (agent/worker.go:209 overrides them per worker with
+      # ARTEX's own MITM address, which then chains to bbguard).
+      HTTP_PROXY: http://bbguard:8899
+      HTTPS_PROXY: http://bbguard:8899
+      NO_PROXY: postgres,localhost,127.0.0.1,bbguard
+      # LLM calls bypass the proxy env by design, so point them explicitly.
+      ARTEX_LLM_PROXY: http://bbguard:8899
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - ./artex-data:/app/data
+      - ../ARTEX/skills:/app/skills
+    # No egress network: this container cannot reach the internet except
+    # through bbguard. Self-update is unreachable too, which is intended —
+    # it pulls release binaries from a repository nobody maintains any more.
+    networks: [internal]
+    restart: unless-stopped
+
+networks:
+  internal:
+    internal: true
+  egress: {}
+
+volumes:
+  pgdata:

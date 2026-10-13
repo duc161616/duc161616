@@ -1,0 +1,23 @@
+{
+  "program": "acme-public-bbp",
+  "handle": "duc161616",
+
+  "allow": [
+    "*.acme.com",
+    "api.acme.io",
+    "192.0.2.0/24"
+  ],
+
+  "deny": [
+    "blog.acme.com",
+    "status.acme.com",
+    "*.corp.acme.com"
+  ],
+
+  "infra": [
+    "api.anthropic.com",
+    "api.openai.com",
+    "*.oast.pro",
+    "*.interact.sh"
+  ]
+}

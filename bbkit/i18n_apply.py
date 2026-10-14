@@ -96,26 +96,47 @@ def source_files(root, layer=None):
 
 
 
-def escape_for(text, quote):
-    """Escape a replacement so it is valid inside a literal of this quote type.
+def validate_literal_body(text, quote):
+    """Check that text is a well-formed body for a literal of this quote type.
 
-    A dictionary is written in prose, so its values carry bare quotes and
-    backslashes. Dropped verbatim into a Go or TypeScript "..." literal those
-    break the syntax, and a dry run will not catch it because a dry run does not
-    compile. Escaping here is what keeps the applier from producing a file that
-    no longer parses.
+    Dictionary values are given in SOURCE form: exactly the characters that go
+    between the quotes, with escape sequences already written as escapes (\\n for
+    a newline, \\" for a quote inside a "..." literal). That contract matters
+    because a value legitimately contains escapes — a tool description ending in
+    \\n, a JSON example containing \\" — and auto-escaping here would double the
+    backslashes and corrupt them.
 
-    A backtick (Go raw string / JS template) literal has no escape mechanism at
-    all, so the only safe transformation is to keep the text as-is; a value
-    containing a backtick is refused rather than silently corrupting the file.
+    So this validates instead of transforming, and raises on anything that would
+    not compile. A dry run then surfaces the problem, which is what a silent
+    insert does not: inserting a bare quote into a "..." literal breaks the file
+    and the dry run reports success.
     """
     if quote == '`':
+        # A raw string has no escapes: any backtick ends it early.
         if '`' in text:
-            raise ValueError(f'replacement contains a backtick and cannot go in a raw '
-                             f'string literal: {text[:60]!r}')
+            raise ValueError(f'value contains a backtick, which closes a raw string '
+                             f'literal early: {text[:60]!r}')
         return text
-    out = text.replace('\\', '\\\\').replace(quote, '\\' + quote)
-    return out
+
+    if '\n' in text or '\r' in text:
+        raise ValueError(f'value contains a real newline; write it as the two-character '
+                         f'escape \\n instead: {text[:60]!r}')
+
+    # Walk the string so an escaped quote is accepted and a bare one is not.
+    i = 0
+    while i < len(text):
+        c = text[i]
+        if c == '\\':
+            if i + 1 >= len(text):
+                raise ValueError(f'value ends in a lone backslash: {text[-40:]!r}')
+            i += 2
+            continue
+        if c == quote:
+            raise ValueError(f'value contains an unescaped {quote} inside a {quote}...{quote} '
+                             f'literal; write it as \\{quote}: {text[:60]!r}')
+        i += 1
+    return text
+
 
 def apply_file(path, table, dry_run):
     with open(path, encoding='utf-8') as fh:
@@ -135,11 +156,14 @@ def apply_file(path, table, dry_run):
             return m.group(0)
         if body not in table:
             return m.group(0)
-        english = escape_for(table[body], quote)
+        english = validate_literal_body(table[body], quote)
         hits.append((body, english))
         return quote + english + quote
 
-    out = LITERAL.sub(repl, text)
+    try:
+        out = LITERAL.sub(repl, text)
+    except ValueError as exc:
+        raise ValueError(f'{path}: {exc}') from exc
     if hits and not dry_run:
         with open(path, 'w', encoding='utf-8') as fh:
             fh.write(out)

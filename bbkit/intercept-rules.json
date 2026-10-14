@@ -103,18 +103,21 @@
       "priority": 180,
       "match_target": "tool_input",
       "match_type": "regex",
-      "pattern": "(?i)\\b(hydra|medusa|patator|ncrack|crowbar|brutespray|crackmapexec|kerbrute|john|hashcat)\\b",
+      "pattern": "(?i)\\b(hydra|medusa|patator|ncrack|crowbar|brutespray|crackmapexec|kerbrute)\\b",
       "action": "ask",
-      "message": "Brute force bị nhiều chương trình cấm và gây account lockout cho user thật. Chỉ duyệt nếu policy cho phép rõ ràng VÀ bạn dùng account test của mình.",
+      "message": "Brute force ONLINE nhắm vào target: nhiều chương trình cấm, và gây account lockout cho user thật. Chỉ duyệt nếu policy cho phép rõ ràng VÀ bạn dùng account test của mình. (Crack offline bằng hashcat/john trên hash bạn đã có không đi qua rule này — nó không gửi gói nào tới target.)",
       "timeout_enabled": true,
       "timeout_seconds": 300,
       "timeout_action": "deny",
       "should_match": [
         "hydra -l admin -P rockyou.txt target.com http-post-form",
-        "hashcat -m 0 hash.txt rockyou.txt"
+        "medusa -h target.com -u admin -P pass.txt -M http",
+        "kerbrute userenum -d target.com users.txt"
       ],
       "should_not_match": [
-        "curl -u admin:admin https://target.com/"
+        "curl -u admin:admin https://target.com/",
+        "hashcat -a 0 -m 16500 token.jwt rockyou.txt",
+        "john --wordlist=rockyou.txt hashes.txt"
       ]
     },
     {

@@ -78,7 +78,7 @@ services:
       - ./artex-data:/app/data
       # Skill dir là OVERLAY ở ../skills, không phải ../ARTEX/skills: giữ mirror
       # upstream sạch, và cho bạn chỗ thêm skill mới. Nội dung = 3 skill upstream
-      # (đã sửa frontmatter hỏng của scopesentry) + skill bạn tự thêm. Xem ../skills/README.md
+      # (đã sửa frontmatter hỏng của scopesentry) + skill bạn tự thêm. Xem ../SKILLS.md
       - ../skills:/app/skills
     # No egress network: this container cannot reach the internet except
     # through bbguard. Self-update is unreachable too, which is intended —

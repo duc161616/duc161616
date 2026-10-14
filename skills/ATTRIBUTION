@@ -1,0 +1,19 @@
+Skill nhập vào thư mục này (ngoài api-recon, playwright-cli, scopesentry vốn
+thuộc ARTEX) có nguồn từ:
+
+    agentic-awesome-skills
+    https://github.com/sickn33/agentic-awesome-skills
+    Copyright (c) 2026 Antigravity User
+
+    Code/tooling : MIT License
+    Nội dung gốc : Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Cả hai giấy phép đều yêu cầu giữ thông báo bản quyền và attribution. Đừng xoá
+file này. Toàn văn giấy phép xem tại repo gốc (LICENSE và LICENSE-CONTENT).
+
+api-recon / playwright-cli / scopesentry: thuộc ARTEX, AGPL-3.0
+(xem ARTEX/LICENSE). scopesentry đã được sửa frontmatter — chi tiết trong
+../SKILLS.md
+
+Tên file không có đuôi .md là có chủ ý: norma/skill/skill.go:221 coi mọi file
+.md ở đầu thư mục skill là một skill.

@@ -24,7 +24,7 @@ func TestDeleteEndpointPathPattern(t *testing.T) {
 	}
 	for _, s := range hit {
 		if !re.MatchString(s) {
-			t.Errorf("应命中却放行: %s", s)
+			t.Errorf("should match but was allowed: %s", s)
 		}
 	}
 
@@ -40,7 +40,7 @@ func TestDeleteEndpointPathPattern(t *testing.T) {
 	}
 	for _, s := range miss {
 		if re.MatchString(s) {
-			t.Errorf("误拦: %s", s)
+			t.Errorf("false block: %s", s)
 		}
 	}
 }

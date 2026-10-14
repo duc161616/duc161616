@@ -3090,7 +3090,7 @@ export const agents: Agent[] = [
   {
     id: "2",
     key: "planner",
-    name: "规划者",
+    name: "Planner",
     role: "planner",
     builtin: true,
     enabled: true,
@@ -3146,7 +3146,7 @@ export const agents: Agent[] = [
 ];
 
 const promptVars: PromptVar[] = [
-  { name: "Goal", description: "当前任务目标", example: "拿到 acme.com 后台管理权限", source: "runtime" },
+  { name: "Goal", description: "current task goal", example: "拿到 acme.com 后台管理权限", source: "runtime" },
   { name: "AssetSummary", description: "资产图概览", example: "6 子域 / 3 IP / 4 应用 / 4 端点", source: "distilled" },
   { name: "RouteHint", description: "探索路线提示", example: "优先后台与 API 越权面", source: "exploration" },
 ];

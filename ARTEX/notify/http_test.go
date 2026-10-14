@@ -33,16 +33,16 @@ func TestDoJSONClassifiesHTTPStatus(t *testing.T) {
 		status    int
 		permanent bool
 	}{
-		{"200 成功不算错误", 200, false},
-		{"429 限流可重试", 429, false},
-		{"408 请求超时可重试", 408, false},
-		{"500 服务端错误可重试", 500, false},
-		{"502 网关错误可重试", 502, false},
-		{"503 服务不可用可重试", 503, false},
-		{"400 参数错误永久失败", 400, true},
-		{"401 鉴权失败永久失败", 401, true},
-		{"403 禁止访问永久失败", 403, true},
-		{"404 地址不存在永久失败", 404, true},
+		{"200 success is not an error", 200, false},
+		{"429 rate limit is retryable", 429, false},
+		{"408 request timeout is retryable", 408, false},
+		{"500 server error is retryable", 500, false},
+		{"502 bad gateway is retryable", 502, false},
+		{"503 service unavailable is retryable", 503, false},
+		{"400 bad parameters is a permanent failure", 400, true},
+		{"401 auth failure is a permanent failure", 401, true},
+		{"403 forbidden is a permanent failure", 403, true},
+		{"404 not found is a permanent failure", 404, true},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -50,22 +50,22 @@ func TestDoJSONClassifiesHTTPStatus(t *testing.T) {
 			_, err := doJSON(context.Background(), "GET", srv.URL, nil, nil)
 			if tc.status < 300 {
 				if err != nil {
-					t.Fatalf("2xx 不应报错: %v", err)
+					t.Fatalf("2xx should not be an error: %v", err)
 				}
 				return
 			}
 			if err == nil {
-				t.Fatal("非 2xx 应报错")
+				t.Fatal("non-2xx should be an error")
 			}
 			if got := IsPermanent(err); got != tc.permanent {
-				t.Fatalf("HTTP %d 的 permanent 判定错误：期望 %v 得到 %v (%v)",
+				t.Fatalf("wrong permanent judgment for HTTP %d: want %v got %v (%v)",
 					tc.status, tc.permanent, got, err)
 			}
 			// 状态码必须出现在错误里，否则用户无从判断是自己配错了还是对端挂了。
 			// 断言数字而不是 Go 的英文 StatusText：本包的文案是中文的
 			// （与项目其它部分一致），数字才是语言无关、可稳定断言的部分。
 			if !strings.Contains(err.Error(), strconv.Itoa(tc.status)) {
-				t.Errorf("错误信息应带上 HTTP 状态码 %d，得到 %v", tc.status, err)
+				t.Errorf("error message should carry HTTP status code %d, got %v", tc.status, err)
 			}
 		})
 	}
@@ -77,10 +77,10 @@ func TestDoJSONIncludesResponseSnippet(t *testing.T) {
 	srv := replyServer(t, 400, `{"error":"invalid webhook token"}`)
 	_, err := doJSON(context.Background(), "GET", srv.URL, nil, nil)
 	if err == nil {
-		t.Fatal("应报错")
+		t.Fatal("should return an error")
 	}
 	if !strings.Contains(err.Error(), "invalid webhook token") {
-		t.Errorf("错误信息应带回对端的说明，得到 %v", err)
+		t.Errorf("error message should carry the remote's explanation, got %v", err)
 	}
 }
 
@@ -92,15 +92,15 @@ func TestDoJSONSnippetIsSingleLineAndBounded(t *testing.T) {
 	srv := replyServer(t, 500, "line1\nline2\r\n\tline3 "+long)
 	_, err := doJSON(context.Background(), "GET", srv.URL, nil, nil)
 	if err == nil {
-		t.Fatal("应报错")
+		t.Fatal("should return an error")
 	}
 	msg := err.Error()
 	if strings.ContainsAny(msg, "\r\n\t") {
-		t.Errorf("错误信息应压成单行，得到 %q", msg)
+		t.Errorf("error message should be squashed to one line, got %q", msg)
 	}
 	// snippet 上限 200 字符 + 固定前缀，总量必须远小于原始响应。
 	if len(msg) > 400 {
-		t.Errorf("错误信息过长（%d 字节），应被 snippet 截断: %q", len(msg), msg)
+		t.Errorf("error message too long (%d bytes); it should be truncated by snippet: %q", len(msg), msg)
 	}
 }
 
@@ -111,9 +111,9 @@ func TestDoJSONRejectsOversizedResponse(t *testing.T) {
 	srv := replyServer(t, 400, huge)
 	_, err := doJSON(context.Background(), "GET", srv.URL, nil, nil)
 	if err == nil {
-		t.Fatal("应报错")
+		t.Fatal("should return an error")
 	}
 	if len(err.Error()) > 400 {
-		t.Errorf("超大响应应被限长读取并截断，错误信息长度 %d", len(err.Error()))
+		t.Errorf("an oversized response should be read with a length limit and truncated, error message length %d", len(err.Error()))
 	}
 }

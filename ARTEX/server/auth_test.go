@@ -29,13 +29,13 @@ func TestAuthStatusFailsClosedWhenDataSourceUnavailable(t *testing.T) {
 	s.authStatus(w, httptest.NewRequest("GET", "/api/auth/status", nil))
 
 	if w.Code != 503 {
-		t.Fatalf("status=%d want 503 (读失败被当成未初始化会把用户送去 /setup 覆盖密码); body=%s", w.Code, w.Body.String())
+		t.Fatalf("status=%d want 503 (treating a read failure as uninitialized would send the user to /setup to overwrite the password); body=%s", w.Code, w.Body.String())
 	}
 	var payload struct {
 		Initialized *bool `json:"initialized"`
 	}
 	if err := json.Unmarshal(w.Body.Bytes(), &payload); err == nil && payload.Initialized != nil {
-		t.Fatalf("读失败时不应回答 initialized，得到 %v", *payload.Initialized)
+		t.Fatalf("on read failure it should not answer initialized, got %v", *payload.Initialized)
 	}
 }
 
@@ -55,10 +55,10 @@ func TestAuthInitFailsClosedWhenDataSourceUnavailable(t *testing.T) {
 	s.authInit(w, httptest.NewRequest("POST", "/api/auth/init", body))
 
 	if w.Code != 503 {
-		t.Fatalf("status=%d want 503 (读失败时放行会让未认证请求覆盖已有密码); body=%s", w.Code, w.Body.String())
+		t.Fatalf("status=%d want 503 (allowing on read failure would let an unauthenticated request overwrite the existing password); body=%s", w.Code, w.Body.String())
 	}
 	if strings.Contains(w.Body.String(), "token") {
-		t.Fatalf("读失败时不应签发 token: %s", w.Body.String())
+		t.Fatalf("on read failure it should not issue a token: %s", w.Body.String())
 	}
 }
 

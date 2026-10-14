@@ -35,7 +35,7 @@ func TestReleaseCacheServesFromCache(t *testing.T) {
 		}
 	}
 	if calls != 1 {
-		t.Errorf("5 次查询只应回源 1 次，实际 %d 次", calls)
+		t.Errorf("5 queries should hit the source only once, actually %d", calls)
 	}
 }
 
@@ -54,7 +54,7 @@ func TestReleaseCacheForceBypasses(t *testing.T) {
 		t.Fatal(err)
 	}
 	if calls != 2 {
-		t.Errorf("force 应绕过缓存，期望回源 2 次，实际 %d 次", calls)
+		t.Errorf("force should bypass the cache, want 2 source hits, actually %d", calls)
 	}
 }
 
@@ -74,7 +74,7 @@ func TestReleaseCacheExpiresAfterTTL(t *testing.T) {
 		t.Fatal(err)
 	}
 	if calls != 2 {
-		t.Errorf("TTL 过期后应重新回源，期望 2 次，实际 %d 次", calls)
+		t.Errorf("after the TTL expires it should hit the source again, want 2, actually %d", calls)
 	}
 }
 
@@ -82,30 +82,30 @@ func TestReleaseCacheUsesShorterTTLForErrors(t *testing.T) {
 	calls := 0
 	c := newTestCache(func(context.Context, *http.Client) (*selfupdate.Release, error) {
 		calls++
-		return nil, errors.New("github 不可达")
+		return nil, errors.New("github unreachable")
 	})
 
 	if _, err := c.get(t.Context(), nil, false); err == nil {
-		t.Fatal("期望返回错误")
+		t.Fatal("want an error")
 	}
 	// 失败结果也要缓存一会儿，否则 GitHub 不可达时每次页面加载都白等一次超时。
 	if _, err := c.get(t.Context(), nil, false); err == nil {
-		t.Fatal("期望返回错误")
+		t.Fatal("want an error")
 	}
 	if calls != 1 {
-		t.Errorf("错误应短时缓存，期望回源 1 次，实际 %d 次", calls)
+		t.Errorf("errors should be cached briefly, want 1 source hit, actually %d", calls)
 	}
 
 	// 但错误的 TTL 必须明显短于成功的，网络恢复后要能很快自愈。
 	if releaseErrTTL >= releaseTTL {
-		t.Fatalf("错误 TTL(%v) 必须短于成功 TTL(%v)", releaseErrTTL, releaseTTL)
+		t.Fatalf("error TTL (%v) must be shorter than the success TTL (%v)", releaseErrTTL, releaseTTL)
 	}
 	c.at = time.Now().Add(-releaseErrTTL - time.Second)
 	if _, err := c.get(t.Context(), nil, false); err == nil {
-		t.Fatal("期望返回错误")
+		t.Fatal("want an error")
 	}
 	if calls != 2 {
-		t.Errorf("错误 TTL 过期后应重试，期望 2 次，实际 %d 次", calls)
+		t.Errorf("after the error TTL expires it should retry, want 2, actually %d", calls)
 	}
 }
 
@@ -128,16 +128,16 @@ func TestReleaseCacheDoesNotPoisonOnCallerCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	if _, err := c.get(ctx, nil, false); err == nil {
-		t.Fatal("调用方已取消时应把错误透传给它")
+		t.Fatal("when the caller has canceled, the error should be passed through to it")
 	}
 
 	// 关键不变量：被取消的那一次不留下任何痕迹——缓存里既没有"已取消"这个错误，
 	// 也还保着上一次的好结果。
 	if c.err != nil {
-		t.Fatalf("取消错误不应写进缓存，得到 %v", c.err)
+		t.Fatalf("cancellation errors should not be cached, got %v", c.err)
 	}
 	if c.rel == nil || c.rel.TagName != "v0.3.8" {
-		t.Fatalf("缓存应保留上一次的好结果，得到 %+v", c.rel)
+		t.Fatalf("the cache should keep the last good result, got %+v", c.rel)
 	}
 
 	// 那次取消没换来任何新数据，所以下一个访客理应重新回源——而且能正常拿到结果，
@@ -147,9 +147,9 @@ func TestReleaseCacheDoesNotPoisonOnCallerCancel(t *testing.T) {
 	}
 	rel, err := c.get(t.Context(), nil, false)
 	if err != nil {
-		t.Fatalf("取消之后的正常请求不应报错: %v", err)
+		t.Fatalf("a normal request after cancellation should not error: %v", err)
 	}
 	if rel == nil || rel.TagName != "v0.3.8" {
-		t.Fatalf("应拿到正常结果，得到 %+v", rel)
+		t.Fatalf("should get the normal result, got %+v", rel)
 	}
 }

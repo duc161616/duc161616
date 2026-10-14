@@ -256,10 +256,10 @@ func TestCompanyICPAttribution(t *testing.T) {
 	t.Cleanup(func() {
 		// 不吞错误：清理失败会污染后续用例，必须让它在本次运行里显形。
 		if _, err := d.Exec(`DELETE FROM assets WHERE task_ids @> ARRAY[$1]::bigint[]`, suffix); err != nil {
-			t.Errorf("清理测试资产失败: %v", err)
+			t.Errorf("cleaning up test assets failed: %v", err)
 		}
 		if _, err := d.Exec(`DELETE FROM companies WHERE id=$1`, companyID); err != nil {
-			t.Errorf("清理测试公司失败: %v", err)
+			t.Errorf("cleaning up test company failed: %v", err)
 		}
 	})
 

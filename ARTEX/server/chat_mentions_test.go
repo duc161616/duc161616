@@ -153,7 +153,7 @@ func TestChatMentionWorkerReceivesServerDetails(t *testing.T) {
 	requests := make(chan llm.CompletionRequest, 10)
 	worker := agent.NewWorker(retestProvider{complete: func(_ context.Context, req llm.CompletionRequest) (llm.Message, string, llm.Usage, error) {
 		requests <- req
-		return llm.Message{Role: llm.RoleAssistant, Content: []llm.ContentBlock{llm.TextBlock("已读取引用")}}, "end_turn", llm.Usage{}, nil
+		return llm.Message{Role: llm.RoleAssistant, Content: []llm.ContentBlock{llm.TextBlock("read referenced")}}, "end_turn", llm.Usage{}, nil
 	}}, "test", m.dir, nil, 10000, 1)
 	worker.SetNonStreaming(func() bool { return true })
 	s.engine.SetAuthoritativeAgentResolver(func(*Task) (*agent.Planner, *agent.Worker) {
@@ -183,7 +183,7 @@ func TestChatMentionWorkerReceivesServerDetails(t *testing.T) {
 	select {
 	case req := <-requests:
 		blob, _ := json.Marshal(req.Messages)
-		if !strings.Contains(string(blob), "worker-hidden-proof") || !strings.Contains(string(blob), "用户引用的记录快照") {
+		if !strings.Contains(string(blob), "worker-hidden-proof") || !strings.Contains(string(blob), "Snapshot of records referenced by the user") {
 			t.Fatalf("worker missing reference details: %s", blob)
 		}
 	case <-time.After(5 * time.Second):
@@ -219,7 +219,7 @@ func TestChatMentionBoundedJSON(t *testing.T) {
 		items[i] = long
 	}
 	v := boundChatMentionValue(map[string]any{"report": long, "scope": items}).(map[string]any)
-	if !strings.Contains(v["report"].(string), "已截断") || len(v["scope"].([]any)) != 101 {
+	if !strings.Contains(v["report"].(string), "truncated") || len(v["scope"].([]any)) != 101 {
 		t.Fatal("missing truncation markers")
 	}
 	encoded, err := json.Marshal(v)
@@ -232,7 +232,7 @@ func TestChatMentionCatalogAndContext(t *testing.T) {
 	s, fid := newRetestServer(t)
 	pg := s.m.pg
 	var cid int64
-	if err := pg.QueryRow(`INSERT INTO companies(name,nkey) VALUES('引用测试公司','mention-test-company') RETURNING id`).Scan(&cid); err != nil {
+	if err := pg.QueryRow(`INSERT INTO companies(name,nkey) VALUES('mention test company','mention-test-company') RETURNING id`).Scan(&cid); err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _, _ = pg.Exec(`DELETE FROM companies WHERE id=$1`, cid) })
@@ -244,7 +244,7 @@ func TestChatMentionCatalogAndContext(t *testing.T) {
 	for _, kind := range []string{"root_domain", "subdomain", "ip", "app", "service", "endpoint"} {
 		var id int64
 		if err := pg.QueryRow(`INSERT INTO assets(type,company_id,domain,ip,app_name,url,method,extra)
-          VALUES($1,$2,$3,'192.0.2.81','引用测试应用',$4,'GET','{"note":"参数和扩展信息"}') RETURNING id`,
+          VALUES($1,$2,$3,'192.0.2.81','mention test app',$4,'GET','{"note":"parameters and extra info"}') RETURNING id`,
 			kind, cid, kind+".mention.example", "https://"+kind+".mention.example/path").Scan(&id); err != nil {
 			t.Fatal(err)
 		}
@@ -269,14 +269,14 @@ func TestChatMentionCatalogAndContext(t *testing.T) {
 			}
 		}
 	}
-	if _, err := pg.Exec(`UPDATE findings SET report='完整报告内容',summary='最新摘要' WHERE id=$1`, fid); err != nil {
+	if _, err := pg.Exec(`UPDATE findings SET report='full report content',summary='latest summary' WHERE id=$1`, fid); err != nil {
 		t.Fatal(err)
 	}
 	msg, err := composeChatMentionMessage(pg, refs.String())
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"完整报告内容", "最新摘要", "original proof", "mention.example", "引用测试公司", "参数和扩展信息"} {
+	for _, want := range []string{"full report content", "latest summary", "original proof", "mention.example", "mention test company", "parameters and extra info"} {
 		if !strings.Contains(msg, want) {
 			t.Errorf("context missing %s", want)
 		}
@@ -285,7 +285,7 @@ func TestChatMentionCatalogAndContext(t *testing.T) {
 		t.Fatal("accepted missing record")
 	}
 	for _, kind := range []string{"finding", "company", "asset", ""} {
-		r := httptest.NewRequest("GET", "/api/chat/mentions?kind="+kind+"&q="+url.QueryEscape("引用"), nil)
+		r := httptest.NewRequest("GET", "/api/chat/mentions?kind="+kind+"&q="+url.QueryEscape("reference"), nil)
 		w := httptest.NewRecorder()
 		s.searchChatMentions(w, r)
 		if w.Code != 200 {
@@ -310,12 +310,12 @@ func TestChatMentionConversationReceivesServerDetails(t *testing.T) {
 	s, fid := newRetestServer(t)
 	setRetestProvider(s, retestProvider{complete: func(_ context.Context, req llm.CompletionRequest) (llm.Message, string, llm.Usage, error) {
 		blob, _ := json.Marshal(req.Messages)
-		if !strings.Contains(string(blob), "original proof") || !strings.Contains(string(blob), "用户引用的记录快照") {
+		if !strings.Contains(string(blob), "original proof") || !strings.Contains(string(blob), "Snapshot of records referenced by the user") {
 			t.Errorf("model did not receive resolved evidence: %s", blob)
 		}
-		return llm.Message{Role: llm.RoleAssistant, Content: []llm.ContentBlock{llm.TextBlock("已读取引用")}}, "end_turn", llm.Usage{}, nil
+		return llm.Message{Role: llm.RoleAssistant, Content: []llm.ContentBlock{llm.TextBlock("read referenced")}}, "end_turn", llm.Usage{}, nil
 	}})
-	c, err := s.m.pg.CreateConversation("auto", "引用测试", nil)
+	c, err := s.m.pg.CreateConversation("auto", "mention test", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

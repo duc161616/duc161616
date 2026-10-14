@@ -25,7 +25,7 @@ func TestInsertSettingIfAbsentDoesNotOverwrite(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !inserted {
-		t.Fatal("首次写入应返回 inserted=true")
+		t.Fatal("first write should return inserted=true")
 	}
 
 	inserted, err = d.InsertSettingIfAbsent(key, "second")
@@ -33,7 +33,7 @@ func TestInsertSettingIfAbsentDoesNotOverwrite(t *testing.T) {
 		t.Fatal(err)
 	}
 	if inserted {
-		t.Fatal("键已存在时应返回 inserted=false")
+		t.Fatal("should return inserted=false when the key exists")
 	}
 
 	got, ok, err := d.GetSetting(key)
@@ -41,6 +41,6 @@ func TestInsertSettingIfAbsentDoesNotOverwrite(t *testing.T) {
 		t.Fatalf("GetSetting: ok=%v err=%v", ok, err)
 	}
 	if got != "first" {
-		t.Fatalf("值被覆盖成 %q，应保持 %q", got, "first")
+		t.Fatalf("value overwritten to %q, should stay %q", got, "first")
 	}
 }

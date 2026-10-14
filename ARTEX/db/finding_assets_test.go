@@ -55,7 +55,7 @@ func TestBuildFindingAssetTree(t *testing.T) {
 	}
 	defer d.Close()
 
-	tk, err := d.CreateTask("资产树测试", "目标", nil, 0, 0)
+	tk, err := d.CreateTask("asset tree test", "target", nil, 0, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,15 +78,15 @@ func TestBuildFindingAssetTree(t *testing.T) {
 	})
 
 	// 只把发现挂在最深的 endpoint 上,祖先链要靠构树自己补出来。
-	if _, err := d.AddFinding(tk.ID, 0, "XSS", "反射型 XSS", "high", "s", "e", "w", []int64{epID}); err != nil {
+	if _, err := d.AddFinding(tk.ID, 0, "XSS", "Reflected XSS", "high", "s", "e", "w", []int64{epID}); err != nil {
 		t.Fatal(err)
 	}
 	// 直接挂在服务上的一条,用来验证 Self 与 Total 的区别。
-	if _, err := d.AddFinding(tk.ID, 0, "Info", "信息泄露", "low", "s", "e", "w", []int64{svcID}); err != nil {
+	if _, err := d.AddFinding(tk.ID, 0, "Info", "Information disclosure", "low", "s", "e", "w", []int64{svcID}); err != nil {
 		t.Fatal(err)
 	}
 	// 资产行不存在(已删除资产)→ 未关联桶。
-	if _, err := d.AddFinding(tk.ID, 0, "Misc", "孤儿", "medium", "s", "e", "w", []int64{999000111}); err != nil {
+	if _, err := d.AddFinding(tk.ID, 0, "Misc", "orphan", "medium", "s", "e", "w", []int64{999000111}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -129,7 +129,7 @@ func TestBuildFindingAssetTree(t *testing.T) {
 		t.Errorf("root totals: want 2/high1/low1, got %d/high%d/low%d", rootNode.Total, rootNode.High, rootNode.Low)
 	}
 	if rootNode.Self != 0 {
-		t.Errorf("root self: want 0 (只是祖先), got %d", rootNode.Self)
+		t.Errorf("root self: want 0 (ancestor only), got %d", rootNode.Self)
 	}
 	if svcNode.Total != 2 || svcNode.Self != 1 {
 		t.Errorf("service total/self: want 2/1, got %d/%d", svcNode.Total, svcNode.Self)
@@ -161,7 +161,7 @@ func TestFindingAssetScopeFilter(t *testing.T) {
 	}
 	defer d.Close()
 
-	tk, err := d.CreateTask("资产筛选测试", "目标", nil, 0, 0)
+	tk, err := d.CreateTask("asset filter test", "target", nil, 0, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -175,18 +175,18 @@ func TestFindingAssetScopeFilter(t *testing.T) {
 	subID := seedTreeAsset(t, d, "subdomain", map[string]any{"domain": sub, "root_domain": root})
 	otherID := seedTreeAsset(t, d, "root_domain", map[string]any{"domain": other, "root_domain": other})
 
-	if _, err := d.AddFinding(tk.ID, 0, "A", "子域名上的", "high", "s", "e", "w", []int64{subID}); err != nil {
+	if _, err := d.AddFinding(tk.ID, 0, "A", "on a subdomain", "high", "s", "e", "w", []int64{subID}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := d.AddFinding(tk.ID, 0, "B", "别的根域名上的", "high", "s", "e", "w", []int64{otherID}); err != nil {
+	if _, err := d.AddFinding(tk.ID, 0, "B", "on another root domain", "high", "s", "e", "w", []int64{otherID}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := d.AddFinding(tk.ID, 0, "C", "没有资产的", "high", "s", "e", "w", nil); err != nil {
+	if _, err := d.AddFinding(tk.ID, 0, "C", "without assets", "high", "s", "e", "w", nil); err != nil {
 		t.Fatal(err)
 	}
 	// 指向已删除资产的发现,和 asset_ids 为空的一样属于「未关联」——树的桶收下它,
 	// 列表筛选也必须查得出来,两处口径不一致会让桶上的数字大于点开后的条数。
-	if _, err := d.AddFinding(tk.ID, 0, "D", "资产已删除", "high", "s", "e", "w", []int64{999000333}); err != nil {
+	if _, err := d.AddFinding(tk.ID, 0, "D", "asset deleted", "high", "s", "e", "w", []int64{999000333}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -196,11 +196,11 @@ func TestFindingAssetScopeFilter(t *testing.T) {
 		scope string
 		want  int
 	}{
-		{"整棵子树", assetKey(rootID), 1},      // 根域名下只有子域名那条
-		{"叶子节点", assetKey(subID), 1},       // 子域名自身
-		{"另一棵树", assetKey(otherID), 1},     // 互不串味
-		{"未关联", FindingUnassignedAsset, 2}, // asset_ids 为空的 + 指向已删资产的
-		{"不存在的节点", "a:999000222", 0},       // 当前筛选下没有该节点 → 空结果,不是不过滤
+		{"whole subtree", assetKey(rootID), 1},  // 根域名下只有子域名那条
+		{"leaf node", assetKey(subID), 1},       // 子域名自身
+		{"another tree", assetKey(otherID), 1},  // 互不串味
+		{"unlinked", FindingUnassignedAsset, 2}, // asset_ids 为空的 + 指向已删资产的
+		{"nonexistent node", "a:999000222", 0},  // 当前筛选下没有该节点 → 空结果,不是不过滤
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

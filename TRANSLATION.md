@@ -1,110 +1,96 @@
-# Dịch ARTEX sang tiếng Anh
+# Dịch ARTEX sang tiếng Anh — trạng thái
 
-Số đo thật, lấy bằng `python3 bbkit/i18n_extract.py ARTEX` (chạy lại bất cứ lúc
-nào để xem tiến độ):
+Phạm vi bạn chọn: **toàn bộ phần chức năng**, **dịch tại chỗ** (không thêm i18n
+framework). Comment trong code nằm ngoài phạm vi.
 
-| Layer | Ký tự Hán | File | % | Cần build lại? | Hậu quả nếu bỏ qua |
-|---|---|---|---|---|---|
-| `prompt` | 11.639 | 7 | 7% | **Không — sửa trong DB** | Agent suy nghĩ và ghi fact/finding bằng tiếng Trung |
-| `tooldesc` | 5.211 | 3 | 3% | **Không — sửa trong DB** | LLM đọc mô tả tool bằng tiếng Trung khi chọn tool |
-| `ui` | 24.677 | 78 | 15% | Có — frontend | Bạn vẫn thấy giao diện tiếng Trung |
-| `apimsg` | 17.884 | 120 | 11% | Có — Go | Lỗi API và log tiếng Trung |
-| `test` | 29.915 | 97 | 18% | Có — Go | `go test` fail khi dịch `apimsg` |
-| `comment` | 64.054 | 182 | 40% | Không ảnh hưởng | Chỉ khó đọc code |
+## Đã xong
 
-**158.400 ký tự, nhưng 40% là comment** (không ảnh hưởng gì) và 18% là test.
-Phần thật sự đổi hành vi chỉ **16.850 ký tự trong 10 file** — và nó **không cần
-build lại**.
-
-## Vì sao prompt + tooldesc không cần build lại
-
-`agent/promptcatalog.go` không phải prompt lúc chạy. Nó là **seed**: server bơm
-vào bảng `agent_prompts` bằng `SeedPromptIfEmpty` (`db/config.go:743`) — chỉ ghi
-khi **trống**. Tool description cũng vậy: `BuiltinToolSeeds()` → bảng `tools`.
-
-Hệ quả hai chiều:
-
-- Sửa source Go **không** đổi prompt của instance đang chạy (DB đã có bản tiếng
-  Trung, seed không ghi đè).
-- Nhưng sửa qua API thì **có hiệu lực ngay, không cần rebuild**:
-
-```
-PUT  /api/agents/{key}/prompt       # thay prompt một agent
-POST /api/agents/{key}/prompt/reset # revert về seed
-PUT  /api/tools/{key}               # thay mô tả một tool
-```
-
-Hoặc sửa thẳng trong UI: trang **Agent** → chọn agent → ô prompt.
-
-Agent dựng sẵn: `goals`, `planner`, `worker`, `mainagent`, `auto`, `pentest`,
-`retester`.
-
-## Thứ tự nên làm
-
-1. **`prompt` + `tooldesc`** — 16.850 ký tự, không rebuild, đổi hành vi nhiều
-   nhất. Sau bước này agent ghi fact/finding bằng tiếng Anh, khớp với 83 skill
-   tiếng Anh vừa nhập và khớp với `triage.py`/`report.py`.
-2. **`ui`** — 24.677 ký tự trong 78 file. Chuỗi hardcode trong JSX, `web/package.json`
-   **không có** i18n framework (next-intl/react-i18next/lingui đều không).
-   Hai lựa chọn: dịch tại chỗ (nhanh, một chiều), hoặc thêm next-intl rồi tách
-   chuỗi ra file locale (chậm hơn nhưng giữ được cả hai ngôn ngữ).
-3. **`apimsg` + `test` cùng một commit** — 101 test đang assert trên chuỗi
-   tiếng Trung; dịch production mà không sửa test là `go test ./...` đỏ.
-4. **`comment`** — làm sau cùng hoặc không làm.
-
-## Chỗ KHÔNG được dịch
-
-### 12 chuỗi sentinel trong code production
-
-Đây là chuỗi được **so sánh ở file khác**, không phải nhãn hiển thị. Dịch bên
-sản xuất mà không sửa bên tiêu thụ = hành vi đổi âm thầm, không lỗi biên dịch.
-
-| Vị trí | Chuỗi | Ghi chú |
+| Layer | Nội dung | Commit |
 |---|---|---|
-| `intercept/intercept.go:481`, `db/intercept.go:251`, `db/task_archives_restore.go:680` | `[模型]` | **Sentinel 3 nơi** — đánh dấu quyết định do model đưa ra. Đổi cả 3 cùng lúc hoặc không đổi |
-| `intercept/prompt.go:193` | `实际操作：` | Prefix bắt buộc của lý do; parser kiểm tra nó |
-| `db/company_scope.go:160` | `备案` | **Giữ nguyên.** ICP 备案 là khái niệm pháp lý Trung Quốc, không phải chữ cần dịch — dịch là mất tính năng |
-| `server/conversations.go:443` | `新对话` | Sentinel tiêu đề mặc định |
-| `web/src/components/transcript.tsx:406` | `命令` | So sánh nhãn để chọn cách render |
-| `install.sh`, `update.sh` | `选择` | Prompt của script, an toàn |
+| `prompt` | Prompt của planner/worker/goals/mainagent/retester/intercept judge | pass 1 |
+| `tooldesc` | 220 mô tả tool mà LLM đọc để chọn tool | pass 2 |
+| `ui` | 1.418 string literal + ~1.540 đoạn JSX text của frontend | pass 3 |
+| `apimsg` + `test` | 2.292 chuỗi: lỗi API, log, thông báo push, report Markdown/CSV, tool desc của `norma` (shell_open…), cùng toàn bộ assertion test tương ứng | pass 4 |
 
-`server/server.go:3821-3825` thì **đã song ngữ sẵn**
-(`HasPrefix(m, "意图") || HasPrefix(lower, "intent")`) — dịch được tự do.
+Kiểm chứng sau pass 4 (DB PostgreSQL mới, `go test -count=1 -p 1 ./...`):
 
-### Cách làm an toàn với sentinel
+- ARTEX: **0 regression**. Còn đúng 1 test fail vốn đã fail ở bản gốc
+  (`TestGraphOverviewExpandsAssociatedCompanyScope`). `TestMgmtAPI` thỉnh thoảng
+  fail vì race khi dọn TempDir — chạy riêng thì pass, bản gốc cũng vậy.
+- `norma` (SDK vendored): 8 test fail — **giống hệt bản trước khi dịch**
+  (đã chạy so sánh trên worktree của commit trước), không phải do dịch.
+- Frontend: 187 file parse OK, `node --test` của `chat-mentions` và
+  `activity-merge` pass.
 
-Đừng đổi chuỗi. Thêm nhận cả hai:
+## Lỗi thật tìm ra trong lúc dịch (đã sửa)
 
-```go
-// trước
-if strings.HasPrefix(out.Message, "[模型]") {
-// sau
-if strings.HasPrefix(out.Message, "[模型]") || strings.HasPrefix(out.Message, "[model]") {
+1. **@mention trong chat bị gãy sau pass `ui`.** Frontend sinh token
+   `@[Finding#12 …]` nhưng server (`server/chat_mentions.go`) chỉ nhận
+   `@[漏洞#12 …]` → mention bị bỏ qua âm thầm. Bằng chứng:
+   `web/src/lib/chat-mentions.test.mjs` fail 2/3 sau pass `ui`, pass 3/3 ở commit
+   trước. Sửa: cả hai phía nhận nhãn tiếng Anh **và** tiếng Trung (tin nhắn cũ
+   trong DB vẫn resolve), thêm test cho cả hai dạng.
+2. **Nhận diện hết quota LLM bị mất.** `agent/provider.go` so khớp lỗi trả về từ
+   provider Trung Quốc bằng `余额不足`/`额度不足`/`额度已用尽`/`欠费`. Đây là
+   chuỗi *đầu vào từ bên ngoài*, không phải nhãn — đã khôi phục, test
+   `TestIsQuotaExhaustedMessage` bắt được.
+
+## Chuỗi cố ý giữ tiếng Trung
+
+`python3 bbkit/i18n_apply.py --coverage ARTEX` còn báo tiếng Trung — phần còn lại
+đều thuộc một trong các nhóm sau (đã ghi vào `PROTECTED` trong
+`bbkit/i18n_apply.py` để lần chạy sau không dịch nhầm):
+
+| Chuỗi | Vị trí | Lý do |
+|---|---|---|
+| `[模型]` | `intercept/intercept.go`, `db/intercept.go`, `db/task_archives_restore.go` | Sentinel "quyết định do model" — đọc lại từ DB |
+| `实际操作：…；成功后的后果：…；命中规则：` | `intercept/prompt.go` | Dạng lý do cũ; parser nhận **cả** dạng tiếng Anh `Action: …; Consequence: …; Rule: …` |
+| `备案` | `db/company_scope.go` | ICP 备案 là khái niệm pháp lý, không phải nhãn |
+| `余额不足` `额度不足` `额度已用尽` `欠费` | `agent/provider.go` | Provider trả lỗi tiếng Trung |
+| `漏洞` `资产` `企业`… | `server/chat_mentions.go`, `web/src/lib/chat-mentions.ts` | Token mention cũ, nhận song song tiếng Anh |
+| `新对话` | `server/conversations.go` | Tiêu đề mặc định cũ; bản mới dùng `New chat` |
+| `意图` / `提示` | `server/server.go` | Lệnh rule-mode, đã song ngữ với `intent` / `hint` |
+| `reporterToolCallMessageV1` | `server/orchestration.go` | Phải khớp từng byte với DB cũ để migration chạy |
+| `失败` `丢弃` `重试`… | `server/logsink.go` | Từ khoá phân loại log — giữ thêm bên cạnh bản tiếng Anh |
+| Fixture `京ICP备…`, chuỗi đo rune, tên skill Unicode | các `*_test.go` | Test hành vi xử lý chữ Hán/ICP — dịch là mất ý nghĩa test |
+
+**Không dịch:** `web/src/lib/mock/*` (dữ liệu demo cho chế độ mock của frontend,
+không chạy khi có backend) và comment trong code.
+
+## ⚠️ Instance đã cài trước khi dịch
+
+Prompt, mô tả tool, tên agent dựng sẵn và tên rule chặn dựng sẵn là **seed**: chỉ
+được ghi khi bảng còn trống (`SeedPromptIfEmpty`, `db/config.go:743`). Cài mới →
+toàn bộ là tiếng Anh. DB cũ → các dòng đó **vẫn là tiếng Trung** cho tới khi bạn
+reset:
+
+```
+POST /api/agents/{key}/prompt/reset   # goals planner worker mainagent auto pentest retester
+PUT  /api/tools/{key}                  # mô tả tool
 ```
 
-Đúng cách mà `server/server.go:3821` đang làm. Dữ liệu cũ trong DB vẫn đọc được,
-dữ liệu mới dùng tiếng Anh.
+Hoặc dễ nhất: tạo DB mới (`docker compose down -v` rồi up lại) nếu chưa có dữ
+liệu cần giữ. Tên rule chặn dựng sẵn trên DB cũ: chưa kiểm chứng có endpoint
+reset — sửa tay trong trang Intercept nếu cần.
+
+## `norma` không còn trùng byte với upstream
+
+`ARTEX/norma` trước đây giống hệt `github.com/Autumn-27/norma v0.4.3` (đã xác minh
+trong `ARTEX-AUDIT-MA-DOC.md`). Pass 4 dịch mô tả tool `shell_*` và thông báo
+`Task …` của nó vì LLM đọc trực tiếp, nên giờ nó **khác** upstream. Muốn kiểm tra
+lại supply chain: diff với bản upstream — mọi khác biệt chỉ được nằm trong string
+literal.
 
 ## Công cụ
 
 ```bash
-python3 bbkit/i18n_extract.py ARTEX                  # bảng tổng quan + risk map
-python3 bbkit/i18n_extract.py ARTEX --layer prompt   # xem từng layer
-python3 bbkit/i18n_extract.py ARTEX --risky          # chỉ chuỗi sentinel
-python3 bbkit/i18n_extract.py ARTEX --tsv i18n.tsv   # catalogue đầy đủ để review
+python3 bbkit/i18n_apply.py --coverage ARTEX            # còn bao nhiêu literal tiếng Trung
+python3 bbkit/i18n_apply.py ARTEX dict.json --dry-run   # áp từ điển (validator chặn literal hỏng)
+python3 bbkit/i18n_jsx.py ARTEX coverage                # JSX text còn tiếng Trung
+python3 bbkit/i18n_extract.py ARTEX --risky             # dò chuỗi sentinel
 ```
 
-TSV có cột `layer`, `risky`, `keep`, `file`, `line`, `chars`, `text` — mở bằng
-spreadsheet, dịch cột text, rồi áp lại theo từng layer.
-
-## Lưu ý về `ARTEX/`
-
-`ARTEX/` là mirror nguyên trạng để còn diff với upstream. Dịch `ui`/`apimsg`
-buộc phải sửa trong đó. Hai cách giữ sạch:
-
-- **Nhánh riêng** cho bản dịch, rebase khi upstream có thay đổi (upstream thực
-  tế đã chết nên rủi ro thấp).
-- **Patch series** trong `patches/`, áp lúc build.
-
-`prompt` và `tooldesc` thì không gặp vấn đề này: chúng sống trong DB, không
-trong source.
+Bài học từ pass 4: sentinel không chỉ là `== "..."`. Hãy dò cả **danh sách từ
+khoá** (`[]string{...}` dùng với `Contains`), **regex**, **map key**, **hằng số
+migration** và chuỗi mà frontend/backend **parse của nhau** (`Tool X requests…`,
+`Archive not found`, `already exists`).

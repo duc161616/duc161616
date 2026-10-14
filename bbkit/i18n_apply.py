@@ -35,8 +35,31 @@ PROTECTED = {
     '[模型]': 'model-decision sentinel read in intercept/intercept.go:481, '
               'db/intercept.go:251, db/task_archives_restore.go:680',
     '实际操作：': 'required reason prefix checked in intercept/prompt.go:193',
-    '新对话': 'default-title sentinel compared in server/conversations.go:443',
-    '命令': 'label compared in web/src/components/transcript.tsx:406',
+    '新对话': 'legacy default chat title still accepted in server/conversations.go '
+             '(new rows use defaultConversationTitle = "New chat")',
+    # Quota errors from Chinese LLM providers arrive in Chinese; agent/provider.go
+    # matches these verbatim (found by TestIsQuotaExhaustedMessage in pass 4).
+    '余额不足': 'provider quota marker, agent/provider.go IsQuotaExhaustedMessage',
+    '额度不足': 'provider quota marker, agent/provider.go IsQuotaExhaustedMessage',
+    '额度已用尽': 'provider quota marker, agent/provider.go IsQuotaExhaustedMessage',
+    '欠费': 'provider quota marker, agent/provider.go IsQuotaExhaustedMessage',
+    # Legacy chat-mention tokens @[漏洞#12]; server/chat_mentions.go and
+    # web/src/lib/chat-mentions.ts accept them next to the English labels.
+    '资产': 'legacy mention kind, server/chat_mentions.go chatMentionKinds',
+    '企业': 'legacy mention kind, server/chat_mentions.go chatMentionKinds',
+    '接口': 'legacy mention kind, server/chat_mentions.go chatMentionKinds',
+    '应用': 'legacy mention kind, server/chat_mentions.go chatMentionKinds',
+    '域名': 'legacy mention kind, server/chat_mentions.go chatMentionKinds',
+    '子域名': 'legacy mention kind, server/chat_mentions.go chatMentionKinds',
+    '服务': 'legacy mention kind, server/chat_mentions.go chatMentionKinds',
+    # Rule-mode command prefixes, server/server.go (accepts intent/hint too).
+    '意图': 'rule-mode command prefix, server/server.go',
+    '提示': 'rule-mode command prefix, server/server.go',
+    # reporterToolCallMessageV1 must equal what old databases hold, byte for byte.
+    '上面刚有一个漏洞被 report_finding 登记。请从触发上下文里取出 finding_id':
+        'migration sentinel, server/orchestration.go reporterToolCallMessageV1',
+    '最后调用 update_finding_report(finding_id, report) 保存。':
+        'migration sentinel, server/orchestration.go reporterToolCallMessageV1',
 }
 
 # Go interpreted/raw strings and TS/JS strings, including template literals.

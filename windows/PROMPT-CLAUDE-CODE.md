@@ -14,7 +14,7 @@ BỐI CẢNH — đọc trước khi làm:
 
 Source nằm ở https://github.com/duc161616/duc161616 branch
 claude/kind-clarke-u7ghly. Repo đó gồm:
-  - ARTEX/            mirror source ARTEX, KHÔNG được sửa
+  - ARTEX/            source ARTEX (đã dịch sang tiếng Anh tại chỗ), KHÔNG được sửa
   - bbguard/          egress proxy enforce scope (Go, stdlib)
   - bbkit/            intercept rules + triage/report script
   - deploy/           docker compose đã khoá egress
@@ -71,7 +71,8 @@ VIỆC CẦN LÀM:
       --token "<JWT lấy từ localStorage.getItem('artex_token')>"
 
 RÀNG BUỘC:
-- Không sửa gì trong ARTEX/ — đó là mirror sạch để còn diff với upstream.
+- Không sửa gì trong ARTEX/ — đó là bản đã dịch sang tiếng Anh và đã qua test
+  (xem TRANSLATION.md); sửa tay dễ làm gãy các chuỗi sentinel.
 - Không publish port 8787 ra 0.0.0.0. deploy/docker-compose.yml đã bind
   127.0.0.1 sẵn; đừng đổi. Đây là app có Bash RCE by design, auth single-user,
   không rate limit login.

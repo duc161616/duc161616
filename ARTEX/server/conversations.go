@@ -25,6 +25,9 @@ const (
 	maxConversationTitleRunes    = 200
 )
 
+// defaultConversationTitle is replaced by the first user message's first line.
+const defaultConversationTitle = "New chat"
+
 func decodeConversationRequest(w http.ResponseWriter, r *http.Request, value any) bool {
 	r.Body = http.MaxBytesReader(w, r.Body, maxConversationRequestBytes)
 	if err := decode(r, value); err != nil {
@@ -109,7 +112,7 @@ func (s *Server) pgCreateConversation(w http.ResponseWriter, r *http.Request) {
 	}
 	title := strings.TrimSpace(req.Title)
 	if title == "" {
-		title = "新对话"
+		title = defaultConversationTitle
 	}
 	if utf8.RuneCountInString(title) > maxConversationTitleRunes {
 		writeErr(w, 400, fmt.Sprintf("标题最多 %d 个字符", maxConversationTitleRunes))
@@ -440,7 +443,8 @@ func (s *Server) pgSendConversationMessage(w http.ResponseWriter, r *http.Reques
 	if _, err := pg.AppendConvActivity(c.ID, ua); err != nil {
 		log.Printf("[conv %d] append user msg failed: %v", c.ID, err)
 	}
-	if c.Title == "" || c.Title == "新对话" {
+	// "新对话" is the default title stored before the translation.
+	if c.Title == "" || c.Title == defaultConversationTitle || c.Title == "新对话" {
 		title := firstLine(msg, 40)
 		if title == "" {
 			title = "附件消息"

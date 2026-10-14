@@ -929,7 +929,7 @@ const ConversationItem = React.memo(function ConversationItem({
         >
           <div className="flex min-w-0 items-center gap-1.5">
             {pinned && <PinIcon className="text-primary size-3 shrink-0" aria-label="Pinned" />}
-            <div className="truncate text-sm">{conv.title || "新对话"}</div>
+            <div className="truncate text-sm">{conv.title || "New chat"}</div>
             {conv.running ? (
               <Badge variant="secondary" className="shrink-0 gap-1" title="Agent is running">
                 <Spinner className="size-3" aria-hidden="true" />
@@ -991,7 +991,7 @@ const ConversationItem = React.memo(function ConversationItem({
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete chat "{conv.title || "新对话"}"?</AlertDialogTitle>
+            <AlertDialogTitle>Delete chat "{conv.title || "New chat"}"?</AlertDialogTitle>
             <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

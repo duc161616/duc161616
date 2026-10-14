@@ -1677,7 +1677,7 @@ function TaskArchivesPanel({ onChanged }: { onChanged: () => void }) {
         let restored = false;
         states.forEach((state, index) => {
           if (state.status !== "rejected" || !(state.reason instanceof Error)) return;
-          if (!state.reason.message.includes("Archive not found")) return;
+          if (!/Archive not found|归档不存在/.test(state.reason.message)) return;
           pendingRestoreIDs.current.delete(pending[index]);
           restored = true;
         });

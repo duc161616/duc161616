@@ -23,6 +23,12 @@ func TestChatMentionParsing(t *testing.T) {
 	if err != nil || len(refs) != 2 || refs[0].Kind != "finding" || refs[1].ID != 34 {
 		t.Fatalf("refs=%+v err=%v", refs, err)
 	}
+	// The frontend writes English labels; a legacy Chinese token for the same
+	// record is the same reference, not a second one.
+	refs, err = parseChatMentions("@[Finding#12 x] @[Subdomain#5] @[漏洞#12 old]")
+	if err != nil || len(refs) != 2 || refs[0].Kind != "finding" || refs[1].Kind != "subdomain" {
+		t.Fatalf("english refs=%+v err=%v", refs, err)
+	}
 	for _, msg := range []string{"@[漏洞#0]", "@[漏洞#999999999999999999999999]"} {
 		if _, err := parseChatMentions(msg); err == nil {
 			t.Fatalf("accepted %q", msg)

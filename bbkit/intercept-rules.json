@@ -2,7 +2,35 @@
   "_comment": "Intercept rules for ARTEX, in the exact shape of POST /api/intercept/rules (server/intercept.go:467). Load with: python3 bbkit/load_rules.py --base http://localhost:8787 --token <jwt>. Out of the box ARTEX enables only ONE hard rule ('[内置] 破坏性系统命令'); its data-exfil rule ships disabled (db/db.go:568) because the curl|nc pattern misfires on legitimate reverse shells. These rules add the bug-bounty-specific gates on top. 'deny' blocks outright; 'ask' holds the call until you approve it (timeout_action deny = fail closed).",
   "rules": [
     {
-      "name": "[BB] Né proxy — chặn tuyệt đối",
+      "name": "[BB] Né proxy (PowerShell) — chặn tuyệt đối",
+      "enabled": true,
+      "priority": 201,
+      "match_target": "tool_input",
+      "match_type": "regex",
+      "pattern": "(?i)(\\$env:(HTTP|HTTPS|ALL)_PROXY[ \\t]*=[ \\t]*(''|\\\"\\\"|\\$null)|Remove-Item[ \\t]+(-Path[ \\t]+)?Env:[\\\\/]*(HTTP|HTTPS|ALL)_PROXY|\\[System\\.Net\\.WebRequest\\]::DefaultWebProxy|-NoProxy\\b|-Proxy[ \\t]+(''|\\\"\\\"|\\$null)|\\[Environment\\]::SetEnvironmentVariable\\([ \\t]*['\\\"](HTTP|HTTPS|ALL)_PROXY)",
+      "action": "deny",
+      "message": "Lệnh PowerShell này né egress proxy (bbguard). Trên Windows tool Bash chạy PowerShell nên cú pháp né proxy khác bash — rule này bắt dạng PowerShell. Cần host nào thì thêm vào scope.json, đừng bỏ proxy.",
+      "timeout_enabled": false,
+      "timeout_seconds": 60,
+      "timeout_action": "deny",
+      "should_match": [
+        "$env:HTTPS_PROXY=''",
+        "$env:HTTP_PROXY = $null",
+        "Remove-Item Env:\\HTTPS_PROXY",
+        "Remove-Item -Path Env:HTTP_PROXY",
+        "[System.Net.WebRequest]::DefaultWebProxy = $null",
+        "Invoke-WebRequest -NoProxy https://api.target.com/",
+        "Invoke-RestMethod -Proxy '' https://x",
+        "[Environment]::SetEnvironmentVariable('HTTPS_PROXY','',''User'')"
+      ],
+      "should_not_match": [
+        "$env:HTTPS_PROXY='http://127.0.0.1:8899'",
+        "Invoke-WebRequest -Proxy http://127.0.0.1:8899 https://api.target.com/",
+        "Invoke-RestMethod https://api.target.com/api/users"
+      ]
+    },
+    {
+      "name": "[BB] Né proxy (bash) — chặn tuyệt đối",
       "enabled": true,
       "priority": 200,
       "match_target": "tool_input",

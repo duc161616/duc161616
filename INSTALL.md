@@ -19,6 +19,13 @@ Image runtime cài sẵn: `ripgrep curl wget vim git jq unzip dnsutils iputils-p
 
 ---
 
+> **Trên Windows?** Xem [`windows/README.md`](./windows/README.md). Tóm lại:
+> binary Windows biên dịch được (đã kiểm chứng bằng cross-compile), nhưng tool
+> Bash của agent chạy PowerShell trên Windows (`norma/tool/task.go:567`), PTY
+> không hỗ trợ, và không có nmap/ripgrep/playwright — nên chạy qua Docker
+> Desktop + WSL2. Có script `windows/Install-Artex.ps1` nhận thư mục cài làm
+> tham số.
+
 ## Cách 1 — Có bbguard (khuyến nghị, dùng được cho target thật)
 
 Đây là đường duy nhất mình khuyên nếu bạn định chạy vào cái gì ngoài lab.

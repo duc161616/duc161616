@@ -40,10 +40,10 @@ export function ReportTab({ taskId }: { taskId: string }) {
     const ok = await copyText(report);
     if (ok) {
       setCopied(true);
-      toast.success("已复制 Markdown");
+      toast.success("Markdown copied");
       setTimeout(() => setCopied(false), 1500);
     } else {
-      toast.error("复制失败，请手动选择文本复制");
+      toast.error("Copy failed; select the text and copy it by hand");
     }
   }
 

@@ -37,13 +37,13 @@ type Kind = CoverageGraphNode["kind"];
 type KindMeta = { label: string; icon: LucideIcon; iconBg: string; hex: string; size: number };
 
 const kindMeta: Record<Kind, KindMeta> = {
-  company: { label: "公司", icon: Building2, iconBg: "bg-slate-500", hex: "#64748b", size: 46 },
-  root_domain: { label: "根域名", icon: Globe, iconBg: "bg-indigo-500", hex: "#6366f1", size: 38 },
-  subdomain: { label: "子域名", icon: Waypoints, iconBg: "bg-blue-500", hex: "#3b82f6", size: 30 },
+  company: { label: "Company", icon: Building2, iconBg: "bg-slate-500", hex: "#64748b", size: 46 },
+  root_domain: { label: "Root domain", icon: Globe, iconBg: "bg-indigo-500", hex: "#6366f1", size: 38 },
+  subdomain: { label: "Subdomain", icon: Waypoints, iconBg: "bg-blue-500", hex: "#3b82f6", size: 30 },
   ip: { label: "IP", icon: Server, iconBg: "bg-cyan-600", hex: "#0891b2", size: 28 },
-  service: { label: "服务", icon: Radio, iconBg: "bg-amber-500", hex: "#f59e0b", size: 26 },
+  service: { label: "Service", icon: Radio, iconBg: "bg-amber-500", hex: "#f59e0b", size: 26 },
   app: { label: "App", icon: AppWindow, iconBg: "bg-fuchsia-500", hex: "#d946ef", size: 26 },
-  endpoint: { label: "端点", icon: Link2, iconBg: "bg-rose-500", hex: "#f43f5e", size: 20 },
+  endpoint: { label: "Endpoint", icon: Link2, iconBg: "bg-rose-500", hex: "#f43f5e", size: 20 },
 };
 
 // G6 节点图标用平台一致的 lucide 图标：把 lucide 的 SVG 路径（v1.22）渲染成白色描边的
@@ -220,7 +220,7 @@ function toG6Nodes(renderNodes: RenderNode[]): G6NodeDatum[] {
         fold: true,
         tested: false,
         inScope: false,
-        lbl: `还有 ${rn.hidden.length} 个${kindMeta[rn.kind].label}`,
+        lbl: `${rn.hidden.length} more ${kindMeta[rn.kind].label}`,
         size: 24,
       };
     }
@@ -346,8 +346,8 @@ function AssetSheet({
               <div className="flex w-full min-w-0 flex-col gap-4 p-4">
                 <section>
                   <h4 className="text-muted-foreground mb-1 text-xs font-medium">属性</h4>
-                  <DetailRow label="类型">{meta.label}</DetailRow>
-                  <DetailRow label="测试状态">
+                  <DetailRow label="Type">{meta.label}</DetailRow>
+                  <DetailRow label="Test state">
                     {node.in_scope ? (
                       node.tested ? (
                         <span className="text-emerald-600 dark:text-emerald-400">已测试</span>
@@ -358,25 +358,25 @@ function AssetSheet({
                       <span className="text-neutral-400">范围外（连接节点）</span>
                     )}
                   </DetailRow>
-                  <DetailRow label="域名">{node.domain}</DetailRow>
-                  <DetailRow label="根域名">{node.root_domain}</DetailRow>
+                  <DetailRow label="Domain">{node.domain}</DetailRow>
+                  <DetailRow label="Root domain">{node.root_domain}</DetailRow>
                   <DetailRow label="IP">{node.ip}</DetailRow>
-                  <DetailRow label="端口">{node.port ? node.port : undefined}</DetailRow>
+                  <DetailRow label="Port">{node.port ? node.port : undefined}</DetailRow>
                   <DetailRow label="URL">
                     {node.url ? <span className="font-mono text-xs break-all">{node.url}</span> : undefined}
                   </DetailRow>
-                  <DetailRow label="标题">{node.page_title}</DetailRow>
-                  <DetailRow label="状态码">{node.status_code ? node.status_code : undefined}</DetailRow>
+                  <DetailRow label="Title">{node.page_title}</DetailRow>
+                  <DetailRow label="Status code">{node.status_code ? node.status_code : undefined}</DetailRow>
                   <DetailRow label="App">{node.app_name}</DetailRow>
-                  <DetailRow label="资产ID">
+                  <DetailRow label="Asset ID">
                     {node.asset_id ? <span className="font-mono text-xs">{node.asset_id}</span> : undefined}
                   </DetailRow>
                 </section>
                 {refs && (refs.intents.length > 0 || refs.facts.length > 0 || refs.findings.length > 0) && (
                   <section className="flex flex-col gap-3 border-t pt-3">
-                    <RefList title="关联意图" items={refs.intents} />
-                    <RefList title="关联事实" items={refs.facts} />
-                    <RefList title="关联发现" items={refs.findings} />
+                    <RefList title="Linked intent" items={refs.intents} />
+                    <RefList title="Linked fact" items={refs.facts} />
+                    <RefList title="Linked finding" items={refs.findings} />
                   </section>
                 )}
                 <section className="border-t pt-3">
@@ -654,9 +654,9 @@ function GraphInner({ taskId, coverageEnabled = true }: { taskId: string; covera
               )}
             </span>
           ) : (
-            <span className="text-muted-foreground">{loading ? "加载中…" : "暂无范围内资产（先锚定任务范围）"}</span>
+            <span className="text-muted-foreground">{loading ? "Loading…" : "No assets in scope yet (anchor the task scope first)"}</span>
           )}
-          <Button variant="ghost" size="icon" className="size-6" onClick={fetchGraph} title="刷新">
+          <Button variant="ghost" size="icon" className="size-6" onClick={fetchGraph} title="Refresh">
             <RefreshCw className={cn("size-3.5", loading && "animate-spin")} />
           </Button>
         </div>

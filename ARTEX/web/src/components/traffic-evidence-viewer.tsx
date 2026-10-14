@@ -73,7 +73,7 @@ export function TrafficEvidenceViewer({
         <DialogHeader>
           <DialogTitle>流量证据 #{bindingId}</DialogTitle>
           <DialogDescription className="break-all">
-            {detail?.binding.snapshot.url ?? "查看绑定时保存的请求与响应"}
+            {detail?.binding.snapshot.url ?? "View the request and response saved at bind time"}
           </DialogDescription>
         </DialogHeader>
         {error ? (
@@ -90,7 +90,7 @@ export function TrafficEvidenceViewer({
               <TabsContent key={side} value={side}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-xs text-muted-foreground">
-                    正文 {detail[side].total.toLocaleString()} 字节{detail[side].truncated ? " · 当前为预览" : ""}
+                    正文 {detail[side].total.toLocaleString()} 字节{detail[side].truncated ? " · preview" : ""}
                   </span>
                   <Button
                     variant="outline"
@@ -101,7 +101,7 @@ export function TrafficEvidenceViewer({
                         .catch((e: Error) => toast.error(e.message))
                     }
                   >
-                    下载完整{side === "request" ? "请求" : "响应"}正文
+                    下载完整{side === "request" ? "Request" : "Response"}正文
                   </Button>
                 </div>
                 <HttpCodeBlock

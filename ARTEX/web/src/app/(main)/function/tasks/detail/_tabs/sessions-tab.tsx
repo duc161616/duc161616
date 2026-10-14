@@ -74,7 +74,7 @@ import { cn } from "@/lib/utils";
 // keeps the model id in its tooltip. Env-backed configs can arrive without a name,
 // so fall back to the model id rather than rendering an empty badge.
 function resolutionLabel(r: TaskLLMResolution): string {
-  return r.name || r.model || "未命名配置";
+  return r.name || r.model || "Unnamed config";
 }
 
 // fmtBytes renders a human file size for attachment chips (mirrors transcript.tsx).
@@ -202,7 +202,7 @@ const TokenMetrics = React.forwardRef<
     labels?: "short" | "long";
   }
 >(({ input, cache, output, labels = "short", className, ...props }, ref) => {
-  const names = labels === "short" ? ["入", "缓", "出"] : ["input", "cache", "output"];
+  const names = labels === "short" ? ["In", "Cache", "Out"] : ["input", "cache", "output"];
   const values = [input, cache, output];
   return (
     <span
@@ -234,10 +234,10 @@ function fmtDuration(ms: number): string {
 }
 
 const roleMeta = {
-  mainagent: { label: "主 Agent", icon: UserIcon },
-  planner: { label: "规划 Planner", icon: BrainIcon },
+  mainagent: { label: "Main agent", icon: UserIcon },
+  planner: { label: "Planner", icon: BrainIcon },
   worker: { label: "Workers", icon: RadioIcon },
-  system: { label: "系统审计", icon: HistoryIcon },
+  system: { label: "System audit", icon: HistoryIcon },
 } as const;
 
 // The main-agent session is the interactive entry point of this tab and has no
@@ -249,7 +249,7 @@ const roleMeta = {
 // segment is a switchable UI session; only the current (highest) one is writable.
 const mainSessionId = (seg: number) => `s-main-${seg}`;
 const mainSessionKey = (seg: number) => `main:${seg}`;
-const mainSessionTitle = (seg: number) => `主 Agent · 会话 #${seg + 1}`;
+const mainSessionTitle = (seg: number) => `Main agent · session #${seg + 1}`;
 const MAIN_ID = mainSessionId(0);
 const MAIN_SESSION: Session = {
   id: MAIN_ID,
@@ -269,7 +269,7 @@ const PLANNER_ID = "s-planner";
 const PLANNER_SESSION: Session = {
   id: PLANNER_ID,
   role: "planner",
-  title: "规划 Planner · 态势研判",
+  title: "Planner · situation assessment",
   status: "running",
   live: true,
   last_activity: "",
@@ -282,7 +282,7 @@ const SYSTEM_ID = "s-system";
 const SYSTEM_SESSION: Session = {
   id: SYSTEM_ID,
   role: "system",
-  title: "系统事件 · LLM 故障转移",
+  title: "System event · LLM failover",
   status: "done",
   live: false,
   last_activity: "",
@@ -425,8 +425,8 @@ function SessionItem({
             size="icon-xs"
             onClick={onCancel}
             disabled={controlling}
-            title="删除该意图（需填写原因，可选假删除/真删除）"
-            aria-label="删除该意图（需填写原因，可选假删除/真删除）"
+            title="Delete this intent (a reason is required; soft or hard delete)"
+            aria-label="Delete this intent (a reason is required; soft or hard delete)"
             className="text-destructive hover:text-destructive"
           >
             <Trash2Icon />
@@ -467,7 +467,7 @@ function WorkerAssetBadge({ assets }: { assets: IntentAsset[] }) {
               <div className="break-all font-mono text-xs">{asset.label.trim() || `#${asset.asset_id}`}</div>
               <div className="mt-0.5 text-xs text-muted-foreground">
                 {taskAssetTypeLabel(asset.type)} · {taskAssetSourceLabel(asset.source)}
-                {asset.inherited ? ` · 来源任务 #${asset.source_task_id}` : ""}
+                {asset.inherited ? ` · source task #${asset.source_task_id}` : ""}
               </div>
               <div className="mt-0.5 [overflow-wrap:anywhere] text-xs">{asset.source_summary}</div>
             </div>
@@ -553,7 +553,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
       const r = await api.chatUpload("task", taskId, Array.from(files));
       setAttachments((prev) => [...prev, ...r.attachments]);
     } catch (e) {
-      toast.error(`上传失败：${(e as Error).message}`);
+      toast.error(`Upload failed: ${(e as Error).message}`);
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -576,7 +576,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
       setListOpen(false);
       setInput("");
     } catch (e) {
-      toast.error(`新建会话失败：${(e as Error).message}`);
+      toast.error(`Failed to create a session: ${(e as Error).message}`);
     } finally {
       setCreatingMain(false);
       setConfirmNewMain(false);
@@ -596,7 +596,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
     async (session: Session, action: "pause" | "resume" | "cancel", reason?: string, mode?: "soft" | "hard") => {
       if (!session.intent_id || session.inherited || controllingIntent) return;
       if (action === "cancel" && !reason?.trim()) {
-        toast.error("请填写删除原因");
+        toast.error("Enter a reason for deletion");
         return;
       }
       setControllingIntent(session.intent_id);
@@ -604,25 +604,25 @@ export function SessionsTab({ taskId }: { taskId: string }) {
         const res = await api.controlIntent(taskId, session.intent_id, action, reason, mode);
         if (action === "pause") {
           patchIntentState(session.intent_id, "paused");
-          toast.success(`Worker #${session.intent_id} 已暂停`);
+          toast.success(`Worker #${session.intent_id} paused`);
         } else if (action === "resume") {
           patchIntentState(session.intent_id, "open");
-          toast.success(`Worker #${session.intent_id} 已恢复，等待重新领取`);
+          toast.success(`Worker #${session.intent_id} resumed, awaiting reclaim`);
         } else if (mode === "hard") {
           // 真删除:意图及独占下游已物理移除,从列表剔除该行。
           patchIntentState(session.intent_id);
           const d = res.deleted;
-          const extra = d ? `（含 ${d.intents} 意图 / ${d.facts} 事实 / ${d.findings} 漏洞）` : "";
-          toast.success(`Worker #${session.intent_id} 及其独占下游已彻底删除${extra}`);
+          const extra = d ? `(including ${d.intents} intent(s) / ${d.facts} fact(s) / ${d.findings} finding(s))` : "";
+          toast.success(`Worker #${session.intent_id} and its exclusive downstream deleted permanently${extra}`);
           setCancelReason("");
         } else {
           // 假删除:意图置 deleted、记录删除原因,保留节点与产出。
           patchIntentState(session.intent_id, "deleted");
-          toast.success(`Worker #${session.intent_id} 已删除（原因已记录，规划者将据此重新规划）`);
+          toast.success(`Worker #${session.intent_id} deleted (reason recorded; the planner will re-plan from it)`);
           setCancelReason("");
         }
       } catch (error) {
-        toast.error(`Worker 操作失败：${(error as Error).message}`);
+        toast.error(`Worker action failed: ${(error as Error).message}`);
       } finally {
         setControllingIntent(null);
         setCancelIntent(null);
@@ -710,7 +710,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
             patchStore(key, (s) => ({
               ...s,
               loading: false,
-              error: (error as Error).message || "加载失败",
+              error: (error as Error).message || "Load failed",
             }));
           })
           .finally(() => loadingKeysRef.current.delete(key));
@@ -738,7 +738,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
         })
         .catch((e) => {
           if (reqTokenRef.current[key] !== token) return;
-          patchStore(key, (s) => ({ ...s, loading: false, error: (e as Error).message || "加载失败" }));
+          patchStore(key, (s) => ({ ...s, loading: false, error: (e as Error).message || "Load failed" }));
         })
         .finally(() => loadingKeysRef.current.delete(key));
     },
@@ -1036,7 +1036,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
       .catch((err) => {
         if (!alive || reqTokenRef.current.mainboot !== token) return;
         if ((err as Error).message === "superseded") return;
-        patchStore(bootKey, (s) => ({ ...s, loading: false, error: (err as Error).message || "加载失败" }));
+        patchStore(bootKey, (s) => ({ ...s, loading: false, error: (err as Error).message || "Load failed" }));
       })
       .finally(() => loadingKeysRef.current.delete(bootKey));
 
@@ -1513,7 +1513,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
       .catch((e) => {
         setInput(text); // restore so the user doesn't lose their text / attachments
         setAttachments(atts);
-        toast.error(`发送失败：${(e as Error).message || "请稍后重试"}`);
+        toast.error(`Send failed: ${(e as Error).message || "try again later"}`);
       })
       .finally(() => setSending(false));
   }
@@ -1524,7 +1524,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
     if (side.handleCommand(message, () => setWorkerMessage(""))) return;
     if (!intentId || active.inherited || active.status !== "paused" || workerMessageSending || !message) return;
     if (workerMessageCharCount(message) > MAX_WORKER_MESSAGE_CHARS) {
-      toast.error(`消息不能超过 ${MAX_WORKER_MESSAGE_CHARS} 个字符`);
+      toast.error(`A message may not exceed ${MAX_WORKER_MESSAGE_CHARS} characters`);
       return;
     }
     const requestId = workerMessageRequestId || newWorkerMessageRequestID();
@@ -1538,10 +1538,10 @@ export function SessionsTab({ taskId }: { taskId: string }) {
         patchIntentState(intentId, result.state);
         setWorkerMessage("");
         setWorkerMessageRequestId("");
-        toast.success(`消息已发送给 Worker #${intentId}，已立即继续执行`);
+        toast.success(`Message sent to worker #${intentId}; it continued immediately`);
       })
       .catch((error) => {
-        toast.error(`发送失败：${(error as Error).message || "请稍后重试"}`);
+        toast.error(`Send failed: ${(error as Error).message || "try again later"}`);
       })
       .finally(() => setWorkerMessageSending(false));
   }
@@ -1607,7 +1607,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                     "inline-flex items-center gap-1 text-[10px]",
                     sseLive ? "text-emerald-500" : "text-amber-500",
                   )}
-                  title={sseLive ? "实时连接正常" : "实时连接中断，正在自动重连（历史仍可见）"}
+                  title={sseLive ? "Live connection healthy" : "The live connection dropped and is reconnecting (history is still visible)"}
                 >
                   {sseLive ? (
                     <>
@@ -1667,8 +1667,8 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                           type="button"
                           onClick={() => setConfirmNewMain(true)}
                           disabled={creatingMain}
-                          title="新建主 Agent 会话（清空上下文，任务状态保留）"
-                          aria-label="新建主 Agent 会话"
+                          title="New main-agent session (clears the context, keeps the task state)"
+                          aria-label="New main-agent session"
                           className="ml-auto flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-accent/60 hover:text-foreground disabled:opacity-50"
                         >
                           {creatingMain ? (
@@ -1742,7 +1742,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                 const meta = isWorker ? sessionMeta.get(active.id) : undefined;
                 // Worker: the intent moved into the transcript as a message, so the
                 // header shows a stable generic label (intent JSON stays on hover).
-                const title = isWorker ? "Worker 执行会话" : active.title;
+                const title = isWorker ? "Worker execution session" : active.title;
                 const titleEl = <span className="min-w-0 truncate text-sm font-medium">{title}</span>;
                 return meta?.json ? (
                   <Tooltip>
@@ -1763,18 +1763,18 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                       variant="outline"
                       className="max-w-28 shrink-0 font-normal"
                       aria-label={
-                        activeResolution.available ? `当前配置：${resolutionLabel(activeResolution)}` : "模型不可用"
+                        activeResolution.available ? `Current profile: ${resolutionLabel(activeResolution)}` : "Model unavailable"
                       }
                     >
                       <span className="truncate">
-                        {activeResolution.available ? resolutionLabel(activeResolution) : "模型不可用"}
+                        {activeResolution.available ? resolutionLabel(activeResolution) : "Model unavailable"}
                       </span>
                     </Badge>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-xs [overflow-wrap:anywhere]">
                     {activeResolution.available
                       ? [resolutionLabel(activeResolution), activeResolution.model].filter(Boolean).join(" / ")
-                      : activeResolution.reason || "没有可用的 LLM 配置"}
+                      : activeResolution.reason || "No LLM profile available"}
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -1789,7 +1789,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                 </span>
               )}
               {activeState?.hasMore && (
-                <span className="text-[10px] text-muted-foreground" title="向上滚动加载更早历史">
+                <span className="text-[10px] text-muted-foreground" title="Scroll up to load earlier history">
                   ↑ 更早历史
                 </span>
               )}
@@ -1824,7 +1824,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                   </Tooltip>
                 )}
                 {runDuration != null && (
-                  <span className="inline-flex items-center gap-1" title="运行时长（首步 → 末步）">
+                  <span className="inline-flex items-center gap-1" title="Runtime (first step to last)">
                     <ClockIcon className="size-3" />
                     {fmtDuration(runDuration)}
                   </span>
@@ -1903,7 +1903,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                   />
                 ) : (
                   <div className="pl-9 text-xs text-muted-foreground">
-                    {isMain ? "还没有对话。在下方给主 Agent 发消息，引导探索方向或介入流程。" : "暂无活动记录。"}
+                    {isMain ? "No chats yet. Message the main agent below to steer the exploration or step into the flow." : "No activity records."}
                   </div>
                 )}
               </div>
@@ -1925,7 +1925,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                           type="button"
                           className="ml-0.5 text-muted-foreground hover:text-foreground"
                           onClick={() => setAttachments((p) => p.filter((x) => x.path !== a.path))}
-                          title="移除"
+                          title="Remove"
                         >
                           <XIcon className="size-3" />
                         </button>
@@ -1944,9 +1944,9 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                   <MentionTextarea
                     inputGroup
                     rows={1}
-                    aria-label="给主 Agent 发消息"
+                    aria-label="Send a message to the main agent"
                     placeholder={
-                      mainBusy ? "主 Agent 正在运行，可输入 /btw 提问…" : "给主 Agent 发消息，@ 引用漏洞、资产等…"
+                      mainBusy ? "The main agent is running; type /btw to ask a side question…" : "Message the main agent; @ to reference findings, assets and more…"
                     }
                     value={input}
                     disabled={sending}
@@ -1964,13 +1964,13 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                       variant="ghost"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={mainBusy || uploading}
-                      title="上传文件"
-                      aria-label="上传文件"
+                      title="Upload file"
+                      aria-label="Upload file"
                     >
                       {uploading ? <Loader2Icon className="animate-spin" /> : <PaperclipIcon />}
                     </InputGroupButton>
                     {mainBusy && isBtwCommand(input) && (
-                      <InputGroupButton size="icon-xs" onClick={send} aria-label="发送旁路问题">
+                      <InputGroupButton size="icon-xs" onClick={send} aria-label="Send a side question">
                         <ArrowUpIcon />
                       </InputGroupButton>
                     )}
@@ -1981,8 +1981,8 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                         variant="destructive"
                         onClick={stop}
                         disabled={stopping}
-                        title="停止当前执行"
-                        aria-label="停止当前执行"
+                        title="Stop current run"
+                        aria-label="Stop current run"
                       >
                         {stopping ? <Loader2Icon className="animate-spin" /> : <SquareIcon />}
                       </InputGroupButton>
@@ -1993,8 +1993,8 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                         variant="default"
                         onClick={send}
                         disabled={(!input.trim() && attachments.length === 0) || sending}
-                        title="发送消息"
-                        aria-label="发送消息"
+                        title="Send message"
+                        aria-label="Send message"
                       >
                         {sending ? <Loader2Icon className="animate-spin" /> : <ArrowUpIcon />}
                       </InputGroupButton>
@@ -2010,8 +2010,8 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                   <MentionTextarea
                     inputGroup
                     rows={1}
-                    aria-label={`给 Worker #${active.intent_id} 发消息`}
-                    placeholder={`给 Worker #${active.intent_id} 发消息，@ 引用记录，调整执行方向…`}
+                    aria-label={`Message worker #${active.intent_id}`}
+                    placeholder={`Message worker #${active.intent_id}; @ to reference records, adjust its direction…`}
                     value={workerMessage}
                     onValueChange={(value) => {
                       setWorkerMessage(value);
@@ -2036,7 +2036,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                       {workerMessageCharCount(workerMessage)}/{MAX_WORKER_MESSAGE_CHARS}
                     </span>
                     {active.status === "running" && isBtwCommand(workerMessage) && (
-                      <InputGroupButton size="icon-xs" onClick={sendWorkerChat} aria-label="发送旁路问题">
+                      <InputGroupButton size="icon-xs" onClick={sendWorkerChat} aria-label="Send a side question">
                         <ArrowUpIcon />
                       </InputGroupButton>
                     )}
@@ -2047,8 +2047,8 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                         variant="destructive"
                         onClick={() => void controlWorker(active, "pause")}
                         disabled={controllingIntent === active.intent_id}
-                        title="暂停当前 Worker"
-                        aria-label="暂停当前 Worker"
+                        title="Pause the current worker"
+                        aria-label="Pause the current worker"
                       >
                         {controllingIntent === active.intent_id ? (
                           <Loader2Icon className="animate-spin" />
@@ -2064,13 +2064,13 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                           variant="ghost"
                           onClick={() => void controlWorker(active, "resume")}
                           disabled={controllingIntent === active.intent_id || workerMessageSending}
-                          title="不发消息，直接继续执行"
-                          aria-label="直接继续执行"
+                          title="Do not send a message, just continue"
+                          aria-label="Continue directly"
                         >
                           {controllingIntent === active.intent_id ? (
                             <Loader2Icon className="animate-spin" />
                           ) : (
-                            "直接继续"
+                            "Continue directly"
                           )}
                         </InputGroupButton>
                         <InputGroupButton
@@ -2082,8 +2082,8 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                             !workerMessage.trim() ||
                             workerMessageCharCount(workerMessage) > MAX_WORKER_MESSAGE_CHARS
                           }
-                          title="发送消息"
-                          aria-label="发送消息"
+                          title="Send message"
+                          aria-label="Send message"
                         >
                           {workerMessageSending ? <Spinner /> : <ArrowUpIcon />}
                         </InputGroupButton>
@@ -2163,7 +2163,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                   id="cancel-reason"
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
-                  placeholder="说明为什么删除这条意图，例如：方向判断错误 / 目标已失效 / 与其他意图重复…"
+                  placeholder="Explain why this intent is being deleted, for example: wrong direction / target no longer valid / duplicates another intent…"
                   rows={3}
                   autoFocus
                 />
@@ -2177,7 +2177,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                 onClick={() => cancelIntent && void controlWorker(cancelIntent, "cancel", cancelReason, deleteMode)}
               >
                 {controllingIntent ? <Loader2Icon className="animate-spin" /> : <Trash2Icon />}
-                {deleteMode === "hard" ? "彻底删除" : "确认删除"}
+                {deleteMode === "hard" ? "Delete permanently" : "Confirm delete"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -2194,7 +2194,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
             <AlertDialogFooter>
               <AlertDialogCancel disabled={creatingMain}>取消</AlertDialogCancel>
               <AlertDialogAction disabled={creatingMain} onClick={() => void createMainSession()}>
-                {creatingMain ? "开启中…" : "开启新会话"}
+                {creatingMain ? "Opening…" : "Start a new session"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

@@ -28,10 +28,10 @@ import { api } from "@/lib/api";
 import type { FindingTraffic, FindingTrafficBinding, TrafficEvidenceRole } from "@/lib/types";
 
 const ROLES: Record<TrafficEvidenceRole, string> = {
-  baseline: "正常对照",
-  proof: "漏洞证明",
-  verification: "补充验证",
-  supporting: "辅助证据",
+  baseline: "Normal control",
+  proof: "Vulnerability proof",
+  verification: "Extra verification",
+  supporting: "Supporting evidence",
 };
 
 export function FindingTrafficPanel({
@@ -78,7 +78,7 @@ export function FindingTrafficPanel({
       setData(await action());
       setEditing(null);
       onChanged();
-      toast.success("流量证据已更新");
+      toast.success("Traffic evidence updated");
     } catch (e) {
       toast.error((e as Error).message);
       setReload((n) => n + 1);
@@ -176,7 +176,7 @@ export function FindingTrafficPanel({
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          aria-label={`上移证据 ${b.id}`}
+                          aria-label={`Move evidence ${b.id} up`}
                           disabled={busy || index === 0}
                           onClick={() => move(index, -1)}
                         >
@@ -185,7 +185,7 @@ export function FindingTrafficPanel({
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          aria-label={`下移证据 ${b.id}`}
+                          aria-label={`Move evidence ${b.id} down`}
                           disabled={busy || index === data.bindings.length - 1}
                           onClick={() => move(index, 1)}
                         >

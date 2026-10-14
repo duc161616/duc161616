@@ -28,7 +28,7 @@ export default function SetupPage() {
         if (initialized) router.replace("/login");
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : "无法连接到后端服务");
+        setError(err instanceof Error ? err.message : "Cannot reach the backend service");
         setUnavailable(true);
       })
       .finally(() => setChecking(false));
@@ -37,11 +37,11 @@ export default function SetupPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (password !== confirm) {
-      setError("两次输入的密码不一致");
+      setError("The two passwords do not match");
       return;
     }
     if (password.length < 8) {
-      setError("密码长度至少 8 位");
+      setError("Password must be at least 8 characters");
       return;
     }
     setLoading(true);
@@ -51,7 +51,7 @@ export default function SetupPage() {
       auth.setToken(token);
       router.replace("/function/tasks");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "初始化失败");
+      setError(err instanceof Error ? err.message : "Initialization failed");
     } finally {
       setLoading(false);
     }
@@ -76,11 +76,11 @@ export default function SetupPage() {
       <div className="flex w-full items-center justify-center bg-background p-8 lg:w-2/3">
         <div className="w-full max-w-md space-y-10 py-24 lg:py-32">
           <div className="space-y-4 text-center">
-            <h2 className="text-2xl font-medium tracking-tight">{unavailable ? "无法确认初始化状态" : "初始化密码"}</h2>
+            <h2 className="text-2xl font-medium tracking-tight">{unavailable ? "Cannot confirm the initialization state" : "Set initial password"}</h2>
             <p className="mx-auto max-w-xl text-muted-foreground">
               {unavailable
-                ? "后端或数据库暂时不可用。为避免覆盖实例上已有的密码，初始化入口已临时关闭——请恢复服务后重试。"
-                : "首次使用 ARTEX，请为账户设置一个登录密码（至少 8 位）"}
+                ? "The backend or database is temporarily unavailable. To avoid overwriting an existing password on this instance, initialization is temporarily disabled — restore the service and retry."
+                : "First time using ARTEX: set a login password for the account (at least 8 characters)"}
             </p>
           </div>
           {unavailable ? (
@@ -99,7 +99,7 @@ export default function SetupPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="至少 8 位"
+                  placeholder="At least 8 characters"
                   autoFocus
                   autoComplete="new-password"
                 />
@@ -111,13 +111,13 @@ export default function SetupPage() {
                   type="password"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
-                  placeholder="再次输入密码"
+                  placeholder="Enter the password again"
                   autoComplete="new-password"
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" className="w-full" disabled={loading || !password || !confirm}>
-                {loading ? "保存中..." : "设置密码并登录"}
+                {loading ? "Saving..." : "Set a password and sign in"}
               </Button>
             </form>
           )}

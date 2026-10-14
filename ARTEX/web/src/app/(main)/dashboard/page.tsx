@@ -44,9 +44,9 @@ import { cn } from "@/lib/utils";
 // ── chart constants ───────────────────────────────────────────────────────────
 
 const dailyTrendConfig = {
-  input: { label: "输入", color: "hsl(217 91% 60%)" },
-  output: { label: "输出", color: "hsl(263 70% 60%)" },
-  cacheRead: { label: "缓存读", color: "hsl(160 60% 45%)" },
+  input: { label: "Input", color: "hsl(217 91% 60%)" },
+  output: { label: "Output", color: "hsl(263 70% 60%)" },
+  cacheRead: { label: "Cache read", color: "hsl(160 60% 45%)" },
 } satisfies ChartConfig;
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -55,12 +55,12 @@ function fmtRel(ts?: string | number): string {
   if (!ts) return "—";
   const ms = Date.now() - (typeof ts === "number" ? ts * 1000 : Date.parse(ts as string));
   const s = Math.floor(ms / 1000);
-  if (s < 60) return `${s}s 前`;
+  if (s < 60) return `${s}s ago`;
   const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m 前`;
+  if (m < 60) return `${m}m ago`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h 前`;
-  return `${Math.floor(h / 24)}d 前`;
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
 }
 
 function fmtTokens(n: number): string {
@@ -70,12 +70,12 @@ function fmtTokens(n: number): string {
 }
 
 const ASSET_TYPE_LABELS: Record<string, string> = {
-  root_domain: "根域名",
+  root_domain: "Root domain",
   ip: "IP",
-  subdomain: "子域名",
-  app: "应用",
-  service: "服务",
-  endpoint: "端点",
+  subdomain: "Subdomain",
+  app: "App",
+  service: "Service",
+  endpoint: "Endpoint",
 };
 
 const ASSET_COLORS: Record<string, string> = {
@@ -597,8 +597,8 @@ export default function DashboardPage() {
             <div className="ml-1 flex gap-0.5 rounded-md border bg-muted/30 p-0.5">
               {(
                 [
-                  { v: "old", label: "旧版" },
-                  { v: "new", label: "新版" },
+                  { v: "old", label: "Old" },
+                  { v: "new", label: "New" },
                 ] as const
               ).map(({ v, label }) => (
                 <button
@@ -607,8 +607,8 @@ export default function DashboardPage() {
                   onClick={() => setTokenVersion(v)}
                   title={
                     v === "new"
-                      ? "新版：来自 llm_usage 计量账本，逐次调用精确、含中断消耗；仅覆盖启用后的数据"
-                      : "旧版：来自 activity 统计（含历史任务），中断消耗不计、无法精确到模型"
+                      ? "Current: from the llm_usage ledger, exact per call including interrupted usage; covers only data after it was enabled"
+                      : "Legacy: from activity statistics (including historical tasks); interrupted usage is not counted and it cannot be broken down by model"
                   }
                   className={cn(
                     "rounded px-2 py-0.5 text-[9px] font-medium transition-colors",
@@ -695,19 +695,19 @@ export default function DashboardPage() {
                 const total = displayedTokens.input + displayedTokens.output;
                 return [
                   {
-                    label: "输入(未命中)",
+                    label: "Input (missed)",
                     value: displayedTokens.input - displayedTokens.cacheRead,
                     barColor: dailyTrendConfig.input.color!,
                     text: "text-blue-400",
                   },
                   {
-                    label: "缓存命中",
+                    label: "Cache hit",
                     value: displayedTokens.cacheRead,
                     barColor: dailyTrendConfig.cacheRead.color!,
                     text: "text-emerald-400",
                   },
                   {
-                    label: "输出",
+                    label: "Output",
                     value: displayedTokens.output,
                     barColor: dailyTrendConfig.output.color!,
                     text: "text-violet-400",
@@ -767,11 +767,11 @@ export default function DashboardPage() {
               <div className="flex gap-0.5 rounded-md border bg-muted/30 p-0.5">
                 {(
                   [
-                    { days: 7, label: "7天" },
-                    { days: 30, label: "30天" },
-                    { days: 90, label: "3月" },
-                    { days: 180, label: "6月" },
-                    { days: 365, label: "一年" },
+                    { days: 7, label: "7 days" },
+                    { days: 30, label: "30 days" },
+                    { days: 90, label: "3 months" },
+                    { days: 180, label: "6 months" },
+                    { days: 365, label: "1 year" },
                   ] as const
                 ).map(({ days, label }) => (
                   <button
@@ -973,7 +973,7 @@ export default function DashboardPage() {
         <table className="w-full border-collapse text-xs">
           <thead>
             <tr className="border-b">
-              {["任务", "状态", "引擎", "目标进度", "在途", "最近活动"].map((h) => (
+              {["Task", "State", "Engine", "Goal progress", "In flight", "Recent activity"].map((h) => (
                 <th
                   key={h}
                   className="px-4 py-2 text-left text-[9px] font-semibold uppercase tracking-widest text-muted-foreground first:pl-4"
@@ -1045,7 +1045,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         {/* 资产分布 */}
         <Card className="p-4">
-          <SectionTitle icon={NetworkIcon} sub="按类型">
+          <SectionTitle icon={NetworkIcon} sub="By type">
             资产分布
           </SectionTitle>
 
@@ -1075,7 +1075,7 @@ export default function DashboardPage() {
 
         {/* 流量状态码 */}
         <Card className="p-4">
-          <SectionTitle icon={ActivityIcon} sub={`${traffic.length} 次请求`}>
+          <SectionTitle icon={ActivityIcon} sub={`${traffic.length} request(s)`}>
             流量状态码
           </SectionTitle>
 
@@ -1141,7 +1141,7 @@ export default function DashboardPage() {
                     : "border-red-500/30 bg-red-500/10 text-red-400",
                 )}
               >
-                {stats?.llm_configured ? "已配置" : "未配置"}
+                {stats?.llm_configured ? "Configured" : "Not configured"}
               </Badge>
             </div>
 
@@ -1156,7 +1156,7 @@ export default function DashboardPage() {
                     : "text-muted-foreground",
                 )}
               >
-                {settings?.traffic_capture ? "开启" : "关闭"}
+                {settings?.traffic_capture ? "On" : "Closed"}
               </Badge>
             </div>
 

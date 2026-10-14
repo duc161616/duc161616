@@ -66,7 +66,7 @@ export function LinkTrafficDialog({
         selected.finding_id,
         trafficIds.map((traffic_id) => ({ traffic_id })),
       );
-      toast.success(`已关联 ${trafficIds.length} 条流量到漏洞 #${selected.finding_id}`);
+      toast.success(`${trafficIds.length} traffic record(s) linked to finding #${selected.finding_id}`);
       onBound();
       onClose();
     } catch (e) {
@@ -92,7 +92,7 @@ export function LinkTrafficDialog({
             <FieldLabel htmlFor="link-finding-query">查找漏洞</FieldLabel>
             <Input
               id="link-finding-query"
-              placeholder="名称 / 摘要 / 漏洞类别"
+              placeholder="Name / summary / vulnerability class"
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
@@ -126,7 +126,7 @@ export function LinkTrafficDialog({
           ))}
           {!data?.items.length ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
-              {loading ? "加载中…" : "没有匹配的漏洞，请先登记漏洞"}
+              {loading ? "Loading…" : "No matching finding; register the finding first"}
             </p>
           ) : null}
         </div>
@@ -147,14 +147,14 @@ export function LinkTrafficDialog({
           </Button>
         </div>
         <p className="text-sm">
-          {selected ? `已选漏洞：#${selected.finding_id} ${selected.name || selected.vulnclass}` : "请选择一个漏洞"}
+          {selected ? `Selected finding: #${selected.finding_id} ${selected.name || selected.vulnclass}` : "Select one finding"}
         </p>
         <DialogFooter>
           <Button variant="outline" disabled={busy} onClick={onClose}>
             取消
           </Button>
           <Button disabled={busy || !selected} onClick={() => void save()}>
-            {busy ? "保存中…" : "确认关联"}
+            {busy ? "Saving…" : "Confirm link"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -55,13 +55,13 @@ function source(row: InterceptApprovalRow) {
 
 function originLabel(row: InterceptApprovalRow) {
   if (row.task_id) return row.task_id;
-  if (row.conversation_id) return `对话 #${row.conversation_id}`;
+  if (row.conversation_id) return `Chat #${row.conversation_id}`;
   return "—";
 }
 
 function ApprovalOrigin({ row, detail = false }: { row: InterceptApprovalRow; detail?: boolean }) {
   const [locating, setLocating] = React.useState(false);
-  const label = detail && row.task_id ? `任务 ${row.task_id}` : originLabel(row);
+  const label = detail && row.task_id ? `Task ${row.task_id}` : originLabel(row);
   const query = new URLSearchParams({ approval: String(row.id) });
   let href: string | undefined;
   if (row.conversation_id) {
@@ -75,7 +75,7 @@ function ApprovalOrigin({ row, detail = false }: { row: InterceptApprovalRow; de
     <a
       href={href}
       className="text-primary underline-offset-4 hover:underline"
-      aria-label={`定位审批 #${row.id} 的来源：${label}`}
+      aria-label={`Locate the source of approval #${row.id}: ${label}`}
       aria-busy={locating}
       onClick={async (e) => {
         e.stopPropagation();
@@ -87,7 +87,7 @@ function ApprovalOrigin({ row, detail = false }: { row: InterceptApprovalRow; de
           await api.interceptExecution(row.id, row.conversation_id ?? undefined);
           window.location.assign(href);
         } catch (error) {
-          toast.error((error as Error).message || "无法定位对应执行");
+          toast.error((error as Error).message || "Cannot locate the matching run");
           setLocating(false);
         }
       }}
@@ -100,7 +100,7 @@ function ApprovalOrigin({ row, detail = false }: { row: InterceptApprovalRow; de
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const labels: Record<string, string> = { pending: "待审批", allowed: "已允许", denied: "已拒绝", timeout: "已超时" };
+  const labels: Record<string, string> = { pending: "Awaiting approval", allowed: "Allowed", denied: "Denied", timeout: "Timed out" };
   let variant: "default" | "destructive" | "secondary" | "outline" = "outline";
   if (status === "allowed") variant = "default";
   if (status === "denied") variant = "destructive";
@@ -118,11 +118,11 @@ function MatchCell({ row, showReason = true }: { row: InterceptApprovalRow; show
           模型判定
         </Badge>
       ) : (
-        <span className="truncate">{row.rule_name || "规则未记录或已删除"}</span>
+        <span className="truncate">{row.rule_name || "Rule not recorded or deleted"}</span>
       )}
       {showReason ? (
         <p className="truncate text-muted-foreground text-xs" title={reason}>
-          {reason || "未记录理由"}
+          {reason || "No reason recorded"}
         </p>
       ) : null}
     </div>
@@ -133,9 +133,9 @@ function CodeBlock({ label, text, truncated = false }: { label: string; text: st
   async function copy() {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success("已复制");
+      toast.success("Copied");
     } catch {
-      toast.error("复制失败，请手动选择内容复制");
+      toast.error("Copy failed; select the content and copy it by hand");
     }
   }
   return (
@@ -143,13 +143,13 @@ function CodeBlock({ label, text, truncated = false }: { label: string; text: st
       <div className="flex items-center justify-between gap-2">
         <h3 className="font-medium text-muted-foreground text-xs">{label}</h3>
         {text ? (
-          <Button variant="ghost" size="icon-xs" aria-label={`复制${label}`} onClick={() => void copy()}>
+          <Button variant="ghost" size="icon-xs" aria-label={`Copy ${label}`} onClick={() => void copy()}>
             <CopyIcon />
           </Button>
         ) : null}
       </div>
       <pre className="max-h-80 min-w-0 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted/60 p-3 font-mono text-xs leading-6 [overflow-wrap:anywhere]">
-        {text || "未记录"}
+        {text || "Not recorded"}
       </pre>
       {truncated ? <p className="text-muted-foreground text-xs">内容已截断，以上为保存的片段。</p> : null}
     </section>
@@ -157,49 +157,49 @@ function CodeBlock({ label, text, truncated = false }: { label: string; text: st
 }
 
 const contextLabels: Record<string, string> = {
-  user: "用户消息",
-  assistant: "Agent 消息",
-  text: "Agent 消息",
-  tool_use: "工具请求",
-  tool_result: "工具输出",
+  user: "User message",
+  assistant: "Agent message",
+  text: "Agent message",
+  tool_use: "Tool request",
+  tool_result: "Tool output",
 };
 
-const actionLabels: Record<string, string> = { allow: "允许", ask: "转人工审批", deny: "拒绝" };
+const actionLabels: Record<string, string> = { allow: "Allow", ask: "Escalate to human", deny: "Deny" };
 const executionLabels: Record<InterceptAudit["execution_status"], string> = {
-  not_started: "尚未执行",
-  not_executed: "未执行",
-  awaiting_result: "已允许，等待执行结果",
-  succeeded: "执行成功",
-  failed: "执行失败",
-  unknown: "执行结果未知",
+  not_started: "Not run yet",
+  not_executed: "Not run",
+  awaiting_result: "Allowed, awaiting the execution result",
+  succeeded: "Execution succeeded",
+  failed: "Execution failed",
+  unknown: "Execution result unknown",
 };
 
 function ModelReviewContext({ input }: { input: InterceptReviewInput }) {
   return (
-    <section className="flex min-w-0 flex-col gap-4" aria-label="模型审查上下文">
+    <section className="flex min-w-0 flex-col gap-4" aria-label="Model review context">
       <div className="flex flex-col gap-2">
         <h3 className="font-medium text-sm">模型审查上下文</h3>
         <p className="text-muted-foreground text-xs">
           以下为本次实际发送给审查模型的输入快照。背景仅用于理解当前动作，裁决依据为审查策略。
-          {input.version < 4 ? "此记录使用旧版输入，保留当时实际发送的内容。" : null}
+          {input.version < 4 ? "This record uses the legacy input, preserving what was actually sent at the time." : null}
         </p>
       </div>
       <CodeBlock
-        label="当前待审查调用"
+        label="Call under review"
         text={JSON.stringify({ tool_name: input.tool_name, arguments: input.arguments }, null, 2)}
       />
       {input.version >= 2 ? (
         input.background ? (
           <div className="flex min-w-0 flex-col gap-2">
             <CodeBlock
-              label={input.background.source === "user_message" ? "背景 · 用户消息" : "背景 · Worker 意图摘要（旧版）"}
+              label={input.background.source === "user_message" ? "Background · user message" : "Background · worker intent digest (legacy)"}
               text={input.background.text}
               truncated={input.background.truncated}
             />
             <p className="text-muted-foreground text-xs">
               {input.background.source === "user_message"
-                ? "取自当前用户消息。"
-                : "这是旧版发送的 Worker 意图摘要；新版 Worker 审查不再发送此内容。"}
+                ? "Taken from the current user message."
+                : "This is the worker intent digest sent by the legacy version; current worker review no longer sends it."}
             </p>
           </div>
         ) : (
@@ -208,21 +208,21 @@ function ModelReviewContext({ input }: { input: InterceptReviewInput }) {
       ) : (
         <>
           {input.turn_input ? (
-            <CodeBlock label="当前轮输入（旧版）" text={input.turn_input} truncated={input.background_truncated} />
+            <CodeBlock label="Current round input (legacy)" text={input.turn_input} truncated={input.background_truncated} />
           ) : null}
           {input.task ? (
             <>
-              <CodeBlock label="任务描述（旧版）" text={input.task.description} truncated={input.task.truncated} />
-              <CodeBlock label="任务目标（旧版）" text={input.task.goal} truncated={input.task.truncated} />
-              <CodeBlock label="任务操作约束（旧版）" text={JSON.stringify(input.task.constraints, null, 2)} />
+              <CodeBlock label="Task description (legacy)" text={input.task.description} truncated={input.task.truncated} />
+              <CodeBlock label="Task goal (legacy)" text={input.task.goal} truncated={input.task.truncated} />
+              <CodeBlock label="Task operating constraints (legacy)" text={JSON.stringify(input.task.constraints, null, 2)} />
             </>
           ) : null}
           {input.worker_intent ? (
-            <CodeBlock label="Worker 意图（旧版）" text={input.worker_intent} truncated={input.background_truncated} />
+            <CodeBlock label="Worker intent (legacy)" text={input.worker_intent} truncated={input.background_truncated} />
           ) : null}
         </>
       )}
-      {input.working_directory ? <CodeBlock label="工作目录" text={input.working_directory} /> : null}
+      {input.working_directory ? <CodeBlock label="Working directory" text={input.working_directory} /> : null}
       {input.version >= 3 ? (
         <p className="text-muted-foreground text-xs">本次审查未发送历史调用或执行结果。</p>
       ) : (
@@ -232,10 +232,10 @@ function ModelReviewContext({ input }: { input: InterceptReviewInput }) {
             input.history.map((entry) => (
               <div key={entry.tool_use_id} className="flex min-w-0 flex-col gap-2 rounded-lg border p-3">
                 <p className="break-words font-medium text-xs">
-                  {entry.tool} · {entry.status === "succeeded" ? "成功" : "失败（可能有部分副作用）"}
+                  {entry.tool} · {entry.status === "succeeded" ? "Success" : "Failed (there may be partial side effects)"}
                 </p>
-                <CodeBlock label="历史调用参数" text={entry.arguments_preview} truncated={entry.truncated} />
-                <CodeBlock label="历史执行结果" text={entry.result} truncated={entry.truncated} />
+                <CodeBlock label="Past call parameters" text={entry.arguments_preview} truncated={entry.truncated} />
+                <CodeBlock label="Past execution results" text={entry.result} truncated={entry.truncated} />
               </div>
             ))
           ) : (
@@ -255,7 +255,7 @@ function ModelReviewContext({ input }: { input: InterceptReviewInput }) {
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-3">
-          <CodeBlock label="模型审查输入" text={JSON.stringify(input, null, 2)} />
+          <CodeBlock label="Model review input" text={JSON.stringify(input, null, 2)} />
         </CollapsibleContent>
       </Collapsible>
     </section>
@@ -316,7 +316,7 @@ export function ApprovalDetail({
         if (next.status === "pending" || next.audit?.execution_status === "awaiting_result")
           timer = setTimeout(() => void load(), 5000);
       } catch (e) {
-        if (!cancelled) setError((e as Error).message || "详情加载失败");
+        if (!cancelled) setError((e as Error).message || "Failed to load detail");
       }
     }
     void load();
@@ -329,19 +329,19 @@ export function ApprovalDetail({
   // Row updates are authoritative until the lazy detail has caught up.
   const current = detail?.status === row.status ? detail : row;
   const audit = detail?.audit;
-  let execution = audit ? executionLabels[audit.execution_status] : "未记录";
-  if (row.status === "pending") execution = "尚未执行";
-  if (audit && audit.correlation !== "exact" && audit.effective_action === "allow") execution = "未关联执行结果";
+  let execution = audit ? executionLabels[audit.execution_status] : "Not recorded";
+  if (row.status === "pending") execution = "Not run yet";
+  if (audit && audit.correlation !== "exact" && audit.effective_action === "allow") execution = "No execution result linked";
   const command = typeof row.tool_input?.command === "string" ? row.tool_input.command : undefined;
-  let initialLabel = source(row) === "model" ? "模型初判" : "规则初判";
-  if (audit?.model_fallback) initialLabel = "模型异常回退";
+  let initialLabel = source(row) === "model" ? "Model's first call" : "Rule's first call";
+  if (audit?.model_fallback) initialLabel = "Model fallback on error";
 
   return (
     <div className="flex min-w-0 flex-col gap-4 p-3 sm:p-5">
       <div className="grid min-w-0 gap-5 rounded-xl border bg-muted/20 p-4 lg:grid-cols-2">
         <div className="flex min-w-0 flex-col gap-3">
           <CodeBlock
-            label={`${current.agent_name || current.conv_agent_key || "Agent"} · 工具请求`}
+            label={`${current.agent_name || current.conv_agent_key || "Agent"} · tool request`}
             text={JSON.stringify(row.tool_input ?? {}, null, 2)}
           />
           {command ? (
@@ -353,24 +353,24 @@ export function ApprovalDetail({
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="pt-2">
-                <CodeBlock label="命令内容" text={command} />
+                <CodeBlock label="Command content" text={command} />
               </CollapsibleContent>
             </Collapsible>
           ) : null}
           <p className="text-muted-foreground text-xs">
-            执行结果：<span className="text-foreground">{detail ? execution : "加载中…"}</span>
+            执行结果：<span className="text-foreground">{detail ? execution : "Loading…"}</span>
           </p>
         </div>
         <div className="flex min-w-0 flex-col gap-4 lg:border-l lg:pl-5">
           <h3 className="font-medium text-muted-foreground text-xs">
-            {current.status === "pending" ? "审查状态" : "审批裁决"}
+            {current.status === "pending" ? "Review state" : "Approval verdict"}
           </h3>
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={current.status} />
             <MatchCell row={current} showReason={false} />
           </div>
           <p className="whitespace-pre-wrap break-words text-sm leading-7 [overflow-wrap:anywhere]">
-            {current.reason?.replace(/^\[模型\]\s*/, "") || "未记录审批理由"}
+            {current.reason?.replace(/^\[模型\]\s*/, "") || "No approval reason recorded"}
           </p>
           {audit?.decision_reason ? <p className="text-sm">{audit.decision_reason}</p> : null}
           {audit?.effective_action ? <p className="text-sm">最终动作：{actionLabels[audit.effective_action]}</p> : null}
@@ -422,7 +422,7 @@ export function ApprovalDetail({
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm">
               <ChevronDownIcon data-icon="inline-start" className={cn(more && "rotate-180")} />
-              {more ? "收起上下文" : "查看上下文与执行结果"}
+              {more ? "Collapse context" : "View the context and execution result"}
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-4">
@@ -433,8 +433,8 @@ export function ApprovalDetail({
                 <Alert>
                   <AlertDescription>
                     {audit.model_input_digest
-                      ? "此历史记录仅保存审查输入指纹，未保存输入原文，无法还原当时发给模型的上下文。这不代表审查时没有上下文；新产生的模型裁决会保留输入快照。"
-                      : "此记录没有保存模型审查输入，可能由规则直接裁决、模型调用前发生异常或产生于旧版本。"}
+                      ? "This historical record saved only a fingerprint of the review input, not the raw input, so the context sent to the model cannot be reconstructed. That does not mean there was no context at review time; new model verdicts keep a snapshot of their input."
+                      : "This record has no saved model review input: the rule may have decided it directly, an error may have occurred before the model call, or it came from an older version."}
                   </AlertDescription>
                 </Alert>
               )}
@@ -444,15 +444,15 @@ export function ApprovalDetail({
                     <Button variant="ghost" size="sm">
                       <ChevronDownIcon data-icon="inline-start" />
                       {audit.model_input && audit.model_input.version >= 3
-                        ? "查看会话审计片段（未发送模型）"
-                        : "查看会话审计片段"}
+                        ? "View the session audit fragment (not sent to the model)"
+                        : "View session audit fragment"}
                     </Button>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="pt-3">
                     <div className="flex min-w-0 flex-col gap-3">
                       {audit.user_message ? (
                         <CodeBlock
-                          label="会话当前轮输入（审计片段）"
+                          label="Current round input of the session (audit fragment)"
                           text={audit.user_message}
                           truncated={audit.user_truncated}
                         />
@@ -469,7 +469,7 @@ export function ApprovalDetail({
                           audit.context.map((entry, index) => (
                             <CodeBlock
                               key={`${entry.kind}-${entry.tool_use_id || index}`}
-                              label={`${contextLabels[entry.kind] ?? entry.kind}${entry.tool ? ` · ${entry.tool}` : ""}${entry.is_error ? " · 异常" : ""}`}
+                              label={`${contextLabels[entry.kind] ?? entry.kind}${entry.tool ? ` · ${entry.tool}` : ""}${entry.is_error ? " · error" : ""}`}
                               text={entry.text}
                               truncated={entry.truncated}
                             />
@@ -487,23 +487,23 @@ export function ApprovalDetail({
                 text={audit.initial_reason.replace(/^\[模型\]\s*/, "")}
               />
               <CodeBlock
-                label="执行输出"
-                text={audit.output ?? (audit.execution_status === "not_executed" ? "工具未执行。" : "尚无执行输出")}
+                label="Execution output"
+                text={audit.output ?? (audit.execution_status === "not_executed" ? "Tool did not run." : "No execution output yet")}
                 truncated={audit.output_truncated}
               />
               {audit.correlation !== "exact" ? (
                 <Alert>
                   <AlertDescription>
                     {audit.correlation === "ambiguous"
-                      ? "存在相同参数的并发调用，无法唯一关联工具调用；本记录不展示推测的执行结果。"
-                      : "未记录可唯一关联的工具调用 ID。"}
+                      ? "Concurrent calls with identical parameters exist, so the tool call cannot be uniquely matched; this record does not show a guessed execution result."
+                      : "No uniquely identifying tool-call ID was recorded."}
                   </AlertDescription>
                 </Alert>
               ) : null}
               <dl className="grid gap-2 text-muted-foreground text-xs [overflow-wrap:anywhere]">
-                <div>工具调用 ID：{audit.tool_use_id || "未记录"}</div>
+                <div>工具调用 ID：{audit.tool_use_id || "Not recorded"}</div>
                 <div>参数摘要 SHA-256：{audit.input_digest}</div>
-                <div>审查配置指纹 SHA-256：{audit.config_digest || "未记录"}</div>
+                <div>审查配置指纹 SHA-256：{audit.config_digest || "Not recorded"}</div>
                 {audit.model_input_digest ? <div>模型审查输入 SHA-256：{audit.model_input_digest}</div> : null}
                 {audit.execution_ended_at ? <div>结果记录时间：{fmtTime(audit.execution_ended_at)}</div> : null}
               </dl>
@@ -589,7 +589,7 @@ function ApprovalTable({
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={`${open ? "收起" : "展开"}审批 #${row.id}`}
+                    aria-label={`${open ? "Collapse" : "Expand"} approval #${row.id}`}
                     aria-expanded={open}
                     aria-controls={open ? panelID : undefined}
                     onClick={(e) => {
@@ -633,7 +633,7 @@ function ApprovalTable({
               {open ? (
                 <TableRow className="hover:bg-transparent has-aria-expanded:bg-transparent">
                   <TableCell colSpan={columns} className="whitespace-normal p-0">
-                    <section id={panelID} aria-label={`审批详情 #${row.id}`}>
+                    <section id={panelID} aria-label={`Approval detail #${row.id}`}>
                       <ApprovalDetail row={row} busy={busy} decide={decide} revision={revision} />
                     </section>
                   </TableCell>
@@ -690,17 +690,17 @@ export function ApprovalRecords({ taskId }: { taskId?: string }) {
           setTotal(history.value.total);
           setError("");
         } else {
-          setError((history.reason as Error).message || "加载失败");
+          setError((history.reason as Error).message || "Load failed");
         }
         if (pending.status === "fulfilled") {
           setPendingRows(pending.value);
           setPendingError("");
         } else {
-          setPendingError((pending.reason as Error).message || "加载失败");
+          setPendingError((pending.reason as Error).message || "Load failed");
         }
         if (manual) setRevision((v) => v + 1);
       } catch (e) {
-        if (id === request.current) setError((e as Error).message || "加载失败");
+        if (id === request.current) setError((e as Error).message || "Load failed");
       } finally {
         if (id === request.current) {
           setLoading(false);
@@ -753,7 +753,7 @@ export function ApprovalRecords({ taskId }: { taskId?: string }) {
       );
       setPendingRows((prev) => prev.filter((row) => row.id !== id));
       setRevision((v) => v + 1);
-      toast.success(decision === "allowed" ? "已允许执行" : "已拒绝执行");
+      toast.success(decision === "allowed" ? "Execution allowed" : "Execution denied");
       // Re-fetch counts and rows: a decided item may no longer match the filter.
       await latestLoad.current(true);
     } catch (e) {
@@ -771,11 +771,11 @@ export function ApprovalRecords({ taskId }: { taskId?: string }) {
     .map((row) => ({
       conv_title: "",
       conv_agent_key: "",
-      rule_name: row.rule_id ? `规则 #${row.rule_id}` : "",
+      rule_name: row.rule_id ? `Rule #${row.rule_id}` : "",
       ...historyById.get(row.id),
       ...row,
     }));
-  const title = taskId ? "拦截审批" : "审批记录";
+  const title = taskId ? "Intercept approval" : "Approval records";
   return (
     <div className="flex min-w-0 flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -790,7 +790,7 @@ export function ApprovalRecords({ taskId }: { taskId?: string }) {
         </Button>
       </div>
       <p className="text-muted-foreground text-sm">展开记录查看工具请求和审批裁决，以及当时的上下文与执行结果。</p>
-      <FieldGroup className="flex-row flex-wrap items-end gap-3" aria-label="审批记录筛选">
+      <FieldGroup className="flex-row flex-wrap items-end gap-3" aria-label="Filter approval records">
         <Field className="w-full sm:w-40">
           <FieldLabel htmlFor={`${filterID}-status`}>审批状态</FieldLabel>
           <Select
@@ -862,12 +862,12 @@ export function ApprovalRecords({ taskId }: { taskId?: string }) {
             <ShieldAlertIcon className="size-4" />
             待处理（{pending.length}）<span className="text-muted-foreground text-xs">展开后允许或拒绝</span>
           </div>
-          <ApprovalTable rows={pending} busy={deciding} decide={decide} revision={revision} label="待处理审批" />
+          <ApprovalTable rows={pending} busy={deciding} decide={decide} revision={revision} label="Pending approvals" />
         </section>
       ) : null}
       <section className="overflow-hidden rounded-xl border">
         <div className="border-b px-4 py-3 font-medium text-sm">
-          {filtered ? "筛选结果" : "全部记录"}（{total}）
+          {filtered ? "Filter results" : "All records"}（{total}）
         </div>
         {loading ? (
           <div className="flex flex-col gap-3 p-4">
@@ -882,17 +882,17 @@ export function ApprovalRecords({ taskId }: { taskId?: string }) {
               <EmptyMedia variant="icon">
                 <ClipboardListIcon />
               </EmptyMedia>
-              <EmptyTitle>{filtered ? "没有符合筛选条件的审批记录" : "暂无审批记录"}</EmptyTitle>
+              <EmptyTitle>{filtered ? "No approval records match the filter" : "No approval records"}</EmptyTitle>
               <EmptyDescription>
                 {filtered
-                  ? "请调整审批状态或判定来源，或清除筛选查看全部记录。"
-                  : "规则或模型作出审批决定后，记录将显示在这里。"}
+                  ? "Adjust the approval state or decision source, or clear the filters to see every record."
+                  : "Once a rule or model makes an approval decision, the record appears here."}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : null}
         {rows.length ? (
-          <ApprovalTable rows={rows} busy={deciding} decide={decide} revision={revision} label="审批记录列表" />
+          <ApprovalTable rows={rows} busy={deciding} decide={decide} revision={revision} label="Approval record list" />
         ) : null}
         {!loading && !error ? (
           <TablePagination

@@ -32,7 +32,7 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
         setRows(r.deliveries);
         setTotal(r.total);
       })
-      .catch((e) => toast.error("读取投递记录失败：" + (e as Error).message))
+      .catch((e) => toast.error("Failed to read delivery records: " + (e as Error).message))
       .finally(() => setLoading(false));
   }, [channelID, state, page]);
   React.useEffect(() => {
@@ -42,10 +42,10 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
   async function retry(id: number) {
     try {
       await api.notifyRetryDelivery(id);
-      toast.success("已重新入队");
+      toast.success("Re-queued");
       load();
     } catch (e) {
-      toast.error("重发失败：" + (e as Error).message);
+      toast.error("Resend failed: " + (e as Error).message);
     }
   }
 
@@ -62,7 +62,7 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
           }}
         >
           <SelectTrigger size="sm" className="w-44">
-            <SelectValue placeholder="全部渠道" />
+            <SelectValue placeholder="All channels" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">全部渠道</SelectItem>
@@ -81,7 +81,7 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
           }}
         >
           <SelectTrigger size="sm" className="w-32">
-            <SelectValue placeholder="全部状态" />
+            <SelectValue placeholder="All states" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">全部状态</SelectItem>
@@ -115,7 +115,7 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
             {rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-muted-foreground py-8 text-center">
-                  {loading ? "加载中…" : "暂无投递记录"}
+                  {loading ? "Loading…" : "No delivery records"}
                 </TableCell>
               </TableRow>
             ) : (
@@ -129,7 +129,7 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
                       <Badge variant="outline" className={toneClasses[statusMeta("severity", d.severity).tone]}>
                         {statusMeta("severity", d.severity).label}
                       </Badge>
-                      <span className="truncate text-sm">{d.title || "（无标题）"}</span>
+                      <span className="truncate text-sm">{d.title || "(no title)"}</span>
                       {d.event_kind === "finding_status_changed" && (
                         <Badge variant="outline" className="shrink-0">
                           状态变更

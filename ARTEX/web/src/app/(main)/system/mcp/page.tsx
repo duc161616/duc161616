@@ -136,15 +136,15 @@ export default function MCPPage() {
 
   async function saveForm() {
     if (!form.name.trim()) {
-      toast.error("请填写名称");
+      toast.error("Enter a name");
       return;
     }
     if (form.transport === "stdio" && !form.command.trim()) {
-      toast.error("请填写命令");
+      toast.error("Enter a command");
       return;
     }
     if (form.transport !== "stdio" && !form.url.trim()) {
-      toast.error("请填写远程 URL");
+      toast.error("Enter the remote URL");
       return;
     }
     setSaving(true);
@@ -172,11 +172,11 @@ export default function MCPPage() {
         enabled: editing ? editing.enabled : true,
         ...base,
       });
-      toast.success(editing ? "已保存" : "已添加 MCP 服务器");
+      toast.success(editing ? "Saved" : "MCP server added");
       if (!editing) setOpen(false);
       load();
     } catch (e) {
-      toast.error("保存失败：" + (e as Error).message);
+      toast.error("Save failed: " + (e as Error).message);
     } finally {
       setSaving(false);
     }
@@ -188,10 +188,10 @@ export default function MCPPage() {
     try {
       const t = await api.refreshMcpServer(editing.id);
       setTools(t);
-      toast.success(`发现 ${t.length} 个工具`);
+      toast.success(`Found ${t.length} tool(s)`);
       load();
     } catch (e) {
-      toast.error("刷新失败：" + (e as Error).message);
+      toast.error("Refresh failed: " + (e as Error).message);
     } finally {
       setRefreshing(false);
     }
@@ -200,11 +200,11 @@ export default function MCPPage() {
   async function removeServer(s: MCPServer) {
     try {
       await api.deleteMcpServer(s.id);
-      toast.success(`已删除：${s.name}`);
+      toast.success(`Deleted: ${s.name}`);
       setOpen(false);
       load();
     } catch (e) {
-      toast.error("删除失败：" + (e as Error).message);
+      toast.error("Delete failed: " + (e as Error).message);
     }
   }
 
@@ -213,7 +213,7 @@ export default function MCPPage() {
       await api.saveMcpServer({ ...s, enabled: !s.enabled });
       load();
     } catch (e) {
-      toast.error("操作失败：" + (e as Error).message);
+      toast.error("Action failed: " + (e as Error).message);
     }
   }
 
@@ -221,10 +221,10 @@ export default function MCPPage() {
     const on = (visibility[serverId] ?? []).includes(agentId);
     try {
       await api.toggleVisibility(agentId, "mcp", serverId, !on);
-      toast.success(`${on ? "取消" : "授予"}「${agentName}」可见`);
+      toast.success(`${on ? "Revoke" : "Grant"} visibility for "${agentName}"`);
       load();
     } catch (e) {
-      toast.error("操作失败：" + (e as Error).message);
+      toast.error("Action failed: " + (e as Error).message);
     }
   }
 
@@ -311,8 +311,8 @@ export default function MCPPage() {
         <div className="grid gap-2">
           <Label htmlFor="m-env">
             {form.transport !== "stdio"
-              ? "请求头（每行 KEY=VALUE，如 Authorization=Bearer xxx）"
-              : "环境变量（每行 KEY=VALUE）"}
+              ? "Request headers (one KEY=VALUE per line, such as Authorization=Bearer xxx)"
+              : "Environment variables (one KEY=VALUE per line)"}
           </Label>
           <Textarea
             id="m-env"
@@ -393,12 +393,12 @@ export default function MCPPage() {
                   <Switch
                     checked={s.enabled}
                     onCheckedChange={() => toggleEnabled(s)}
-                    aria-label="启用"
+                    aria-label="Enable"
                   />
                   <Button
                     size="icon"
                     variant="outline"
-                    aria-label="删除"
+                    aria-label="Delete"
                     onClick={() => removeServer(s)}
                   >
                     <Trash2Icon className="text-destructive" />
@@ -408,7 +408,7 @@ export default function MCPPage() {
             </CardHeader>
             <CardContent className="grid gap-3">
               <p className="text-muted-foreground text-sm">
-                {s.tools && s.tools.length > 0 ? `${s.tools.length} 个工具` : "尚未发现工具"}
+                {s.tools && s.tools.length > 0 ? `${s.tools.length} tool(s)` : "No tools discovered yet"}
               </p>
               <div className="grid gap-2" onClick={(e) => e.stopPropagation()}>
                 <span className="text-muted-foreground text-xs">可见性（按 Agent 授权）</span>
@@ -435,7 +435,7 @@ export default function MCPPage() {
           className="w-full data-[side=right]:sm:max-w-lg"
         >
           <SheetHeader>
-            <SheetTitle>{editing ? editing.name : "添加 MCP 服务器"}</SheetTitle>
+            <SheetTitle>{editing ? editing.name : "Add MCP server"}</SheetTitle>
             <SheetDescription>
               stdio（本地起进程）或 http（远程 Streamable HTTP）
             </SheetDescription>

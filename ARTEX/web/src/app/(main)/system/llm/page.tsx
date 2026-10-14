@@ -40,24 +40,24 @@ const NONE = "none";
 const fromStore = (v?: string) => (v ? v : NONE);
 const toStore = (v: string) => (v === NONE ? "" : v);
 const THINKING_TYPES: { value: string; label: string }[] = [
-  { value: NONE, label: "不发送（默认）" },
-  { value: "disabled", label: "关闭" },
-  { value: "enabled", label: "开启" },
+  { value: NONE, label: "Do not send (default)" },
+  { value: "disabled", label: "Closed" },
+  { value: "enabled", label: "On" },
 ];
 // 输出上限用哪个请求字段名（仅 openai 格式有意义）。NONE ↔ "" 走同一套哨兵转换。
 const MAX_TOKENS_FIELDS: { value: string; label: string }[] = [
-  { value: NONE, label: "max_tokens（默认）" },
+  { value: NONE, label: "max_tokens (default)" },
   { value: "max_completion_tokens", label: "max_completion_tokens" },
 ];
 // 另外两种格式各自定死了字段名，选项对它们无意义，说明文案里直接讲清楚。
 const MAX_TOKENS_FIELD_HINTS: Record<string, string> = {
   openai:
-    "上限发哪个键。max_tokens 是默认，绝大多数兼容网关只认它；OpenAI 官方推理模型（o 系列 / GPT-5）反过来只认 max_completion_tokens，收到 max_tokens 会直接报 unsupported_parameter。",
-  anthropic: "仅 openai 格式可选。Anthropic 的字段名固定为 max_tokens。",
-  "openai-responses": "仅 openai 格式可选。Responses API 的字段名固定为 max_output_tokens。",
+    "Which key carries the limit. max_tokens is the default and the only one most compatible gateways accept; OpenAI's own reasoning models (o-series / GPT-5) are the reverse and accept only max_completion_tokens, rejecting max_tokens with unsupported_parameter.",
+  anthropic: "Only available for the openai format. Anthropic's field name is fixed as max_tokens.",
+  "openai-responses": "Only available for the openai format. The Responses API field name is fixed as max_output_tokens.",
 };
 const EFFORT_LEVELS: { value: string; label: string }[] = [
-  { value: NONE, label: "不发送（默认）" },
+  { value: NONE, label: "Do not send (default)" },
   { value: "low", label: "low" },
   { value: "medium", label: "medium" },
   { value: "high", label: "high" },
@@ -77,26 +77,26 @@ type Health = { label: string; cls: string; hint?: string };
 function healthOf(p: LLMProfile, m?: LLMPoolMember): Health {
   if (!p.api_key_hint) {
     return {
-      label: "未配置 Key",
+      label: "No key configured",
       cls: "border-muted-foreground/40 text-muted-foreground",
-      hint: "未填 API Key，无法调用",
+      hint: "No API key set, so it cannot be called",
     };
   }
   if (m?.state === "tripped") {
     return {
-      label: m.cooldown_secs > 0 ? `已熔断 · ${cooldownText(m.cooldown_secs)}` : "已熔断",
+      label: m.cooldown_secs > 0 ? `Tripped · ${cooldownText(m.cooldown_secs)}` : "Tripped",
       cls: "border-destructive/50 text-destructive",
       hint: m.last_error,
     };
   }
   if (m?.state === "degraded") {
     return {
-      label: `异常 · 失败 ${m.fails} 次`,
+      label: `Error · failed ${m.fails} time(s)`,
       cls: "border-amber-500/50 text-amber-600 dark:text-amber-400",
       hint: m.last_error,
     };
   }
-  return { label: "正常", cls: "border-emerald-500/50 text-emerald-600 dark:text-emerald-400" };
+  return { label: "Normal", cls: "border-emerald-500/50 text-emerald-600 dark:text-emerald-400" };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -130,12 +130,12 @@ function PoolSheet({
       await api.setSettings(patch);
       await onReload();
       if (patch.llm_pool_enabled !== undefined) {
-        toast.success(patch.llm_pool_enabled ? "已开启 LLM 轮询" : "已关闭 LLM 轮询");
+        toast.success(patch.llm_pool_enabled ? "LLM polling enabled" : "LLM polling disabled");
       } else {
-        toast.success("已更新兜底设置");
+        toast.success("Fallback settings updated");
       }
     } catch (e) {
-      toast.error(`设置失败：${(e as Error).message}`);
+      toast.error(`Setting failed: ${(e as Error).message}`);
     } finally {
       setBusy(false);
     }
@@ -145,9 +145,9 @@ function PoolSheet({
     try {
       await api.resetLLMPool(id);
       await onReload();
-      toast.success(id ? "已恢复该配置" : "已恢复全部配置");
+      toast.success(id ? "Config restored" : "All profiles restored");
     } catch (e) {
-      toast.error(`恢复失败：${(e as Error).message}`);
+      toast.error(`Resume failed: ${(e as Error).message}`);
     }
   }
 
@@ -180,7 +180,7 @@ function PoolSheet({
               checked={enabled}
               disabled={busy}
               onCheckedChange={(v) => void toggle({ llm_pool_enabled: v })}
-              aria-label="LLM 轮询开关"
+              aria-label="LLM polling"
             />
           </div>
 
@@ -198,7 +198,7 @@ function PoolSheet({
                   checked={pool?.bind_fallback ?? false}
                   disabled={busy}
                   onCheckedChange={(v) => void toggle({ llm_pool_bind_fallback: v })}
-                  aria-label="绑定配置失败兜底开关"
+                  aria-label="Fallback switch when a bound profile fails"
                 />
               </div>
 
@@ -253,8 +253,8 @@ function PoolSheet({
                               size="icon"
                               variant="ghost"
                               className="size-7"
-                              aria-label="立即恢复"
-                              title="立即恢复：清除熔断，下次调用重试该配置"
+                              aria-label="Resume now"
+                              title="Resume now: clear the breaker and retry this profile on the next call"
                               onClick={() => void recover(m.profile_id)}
                             >
                               <RotateCcwIcon className="size-3.5" />
@@ -373,12 +373,12 @@ function ProfileSheet({
       if (r.ok && r.models && r.models.length > 0) {
         setModels(r.models);
         setModelsOpen(true);
-        toast.success(`已加载 ${r.models.length} 个模型`);
+        toast.success(`${r.models.length} model(s) loaded`);
       } else {
-        toast.error(`加载模型失败：${r.error ?? "未获取到模型"}`);
+        toast.error(`Failed to load models: ${r.error ?? "no models returned"}`);
       }
     } catch (e) {
-      toast.error(`加载模型出错：${(e as Error).message}`);
+      toast.error(`Error loading models: ${(e as Error).message}`);
     } finally {
       setLoadingModels(false);
     }
@@ -404,12 +404,12 @@ function ProfileSheet({
       );
       // 回复内容一并展示：看得见模型确实说了话，才算和会话里跑通是一回事。
       if (r.ok)
-        toast.success(`连接成功 · ${r.latency_ms ?? "?"}ms · ${r.model ?? model}`, {
-          description: r.reply ? `回复：${r.reply}` : undefined,
+        toast.success(`Connected · ${r.latency_ms ?? "?"}ms · ${r.model ?? model}`, {
+          description: r.reply ? `Reply: ${r.reply}` : undefined,
         });
-      else toast.error(`连接失败：${r.error ?? "未知"}`);
+      else toast.error(`Connection failed: ${r.error ?? "unknown"}`);
     } catch (e) {
-      toast.error(`测试出错：${(e as Error).message}`);
+      toast.error(`Test error: ${(e as Error).message}`);
     } finally {
       setTesting(false);
     }
@@ -417,7 +417,7 @@ function ProfileSheet({
 
   async function save() {
     if (!name.trim() || !model.trim()) {
-      toast.error("请填写名称与模型");
+      toast.error("Enter a name and a model");
       return;
     }
     if (saving) return;
@@ -446,12 +446,12 @@ function ProfileSheet({
         session_header_key: sessionHeaderKey.trim(),
         retry,
       });
-      if (isNew) toast.success(`已新建：${name.trim()}（在卡片上「设为激活」以启用）`);
-      else toast.success(profile?.is_default ? "已保存，激活配置即时生效，无需重启" : "已保存");
+      if (isNew) toast.success(`Created: ${name.trim()} (use "Set active" on its card to enable it)`);
+      else toast.success(profile?.is_default ? "Saved; activating a profile takes effect at once, no restart" : "Saved");
       onSaved(String(id));
       onOpenChange(false);
     } catch (e) {
-      toast.error(`保存失败：${(e as Error).message}`);
+      toast.error(`Save failed: ${(e as Error).message}`);
     } finally {
       setSaving(false);
     }
@@ -465,7 +465,7 @@ function ProfileSheet({
       >
         <SheetHeader className="px-4">
           <SheetTitle className="flex items-center gap-2">
-            {isNew ? "新建模型配置" : `编辑：${profile?.name}`}
+            {isNew ? "New model profile" : `Editing: ${profile?.name}`}
             {profile?.is_default && (
               <Badge variant="outline" className="border-amber-400/50 text-amber-500">
                 激活中
@@ -474,8 +474,8 @@ function ProfileSheet({
           </SheetTitle>
           <SheetDescription>
             {isNew
-              ? "新建后不会自动激活，请在卡片上「设为激活」以启用。"
-              : "修改后点击保存；激活配置保存后对全部 Agent 立即生效。"}
+              ? "A new profile is not activated automatically; use \"Set active\" on its card to enable it."
+              : "Click save after editing; once saved, the active profile applies to every agent immediately."}
           </SheetDescription>
         </SheetHeader>
 
@@ -485,7 +485,7 @@ function ProfileSheet({
               <Label htmlFor="p-name">名称</Label>
               <Input
                 id="p-name"
-                placeholder="例如：OpenAI 生产"
+                placeholder="e.g. OpenAI production"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -494,7 +494,7 @@ function ProfileSheet({
               <Label>格式</Label>
               <Select value={format} onValueChange={(v) => setFormat(v as "anthropic" | "openai" | "openai-responses")}>
                 <SelectTrigger>
-                  <SelectValue placeholder="选择格式" />
+                  <SelectValue placeholder="Select format" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="anthropic">Anthropic</SelectItem>
@@ -526,7 +526,7 @@ function ProfileSheet({
                     className="shrink-0"
                     disabled={loadingModels}
                     onClick={loadModels}
-                    title="从 API 加载可用模型"
+                    title="Load available models from the API"
                   >
                     {loadingModels ? <Loader2Icon className="animate-spin" /> : <RefreshCwIcon />}
                   </Button>
@@ -583,7 +583,7 @@ function ProfileSheet({
             <Input
               id="p-session-header"
               className="font-mono"
-              placeholder="如 x-session-id（留空=不发送）"
+              placeholder="e.g. x-session-id (empty = not sent)"
               value={sessionHeaderKey}
               onChange={(e) => setSessionHeaderKey(e.target.value)}
             />
@@ -599,7 +599,7 @@ function ProfileSheet({
             <Input
               id="p-api-key"
               type="password"
-              placeholder={keyHint ? `已设置（${keyHint}），留空保持不变` : "sk-…"}
+              placeholder={keyHint ? `Set (${keyHint}); leave empty to keep it` : "sk-…"}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
             />
@@ -658,7 +658,7 @@ function ProfileSheet({
                   专用、不希望别人失败时烧掉」的昂贵配置。
                 </p>
               </div>
-              <Switch checked={poolExclude} onCheckedChange={setPoolExclude} aria-label="不参与轮询" />
+              <Switch checked={poolExclude} onCheckedChange={setPoolExclude} aria-label="Excluded from polling" />
             </div>
             <div className="flex items-center justify-between gap-4 border-t pt-3">
               <div className="grid gap-0.5">
@@ -669,7 +669,7 @@ function ProfileSheet({
                   代价是失去运行中的实时进度。
                 </p>
               </div>
-              <Switch checked={streaming} onCheckedChange={setStreaming} aria-label="流式输出" />
+              <Switch checked={streaming} onCheckedChange={setStreaming} aria-label="Streaming output" />
             </div>
           </div>
 
@@ -770,12 +770,12 @@ function ProfileSheet({
         <div className="flex gap-2 border-t px-4 py-3">
           <Button variant="outline" onClick={testConnection} disabled={testing}>
             {testing ? <Loader2Icon className="animate-spin" /> : <PlugZapIcon />}
-            {testing ? "测试中…" : "测试连接"}
+            {testing ? "Testing…" : "Test connection"}
           </Button>
           <Button onClick={save} disabled={saving} className="flex-1">
             {saving && <Loader2Icon className="animate-spin" />}
             {!saving && (isNew ? <PlusIcon /> : <SaveIcon />)}
-            {isNew ? "新建" : "保存"}
+            {isNew ? "New" : "Save"}
           </Button>
         </div>
       </SheetContent>
@@ -829,24 +829,24 @@ export default function LLMPage() {
   async function activate(id: string, name: string) {
     try {
       await api.activateLLMProfile(id);
-      toast.success(`已激活：${name}`);
+      toast.success(`Activated: ${name}`);
       await load();
     } catch (e) {
-      toast.error(`激活失败：${(e as Error).message}`);
+      toast.error(`Activate failed: ${(e as Error).message}`);
     }
   }
 
   async function remove(p: LLMProfile) {
     if (p.is_default) {
-      toast.error("无法删除当前激活的配置");
+      toast.error("The active profile cannot be deleted");
       return;
     }
     try {
       await api.deleteLLMProfile(p.id);
-      toast.success(`已删除：${p.name}`);
+      toast.success(`Deleted: ${p.name}`);
       await load();
     } catch (e) {
-      toast.error(`删除失败：${(e as Error).message}`);
+      toast.error(`Delete failed: ${(e as Error).message}`);
     }
   }
 
@@ -933,7 +933,7 @@ export default function LLMPage() {
                       </span>
                       {p.proxy && <span className="truncate">代理 {p.proxy}</span>}
                       {p.reasoning_effort && (
-                        <span>思考 {p.reasoning_effort === "off" ? "关" : p.reasoning_effort}</span>
+                        <span>思考 {p.reasoning_effort === "off" ? "Close" : p.reasoning_effort}</span>
                       )}
                       {/* 轮询相关的两个字段只在轮询开着时才有意义，关着时不占版面 */}
                       {poolOn &&
@@ -952,12 +952,12 @@ export default function LLMPage() {
                           void activate(p.id, p.name);
                         }}
                       >
-                        {p.is_default ? "已激活" : "设为激活"}
+                        {p.is_default ? "Active" : "Set active"}
                       </Button>
                       <Button
                         size="icon"
                         variant="outline"
-                        aria-label="删除配置"
+                        aria-label="Delete config"
                         onClick={(e) => {
                           e.stopPropagation();
                           void remove(p);

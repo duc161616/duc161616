@@ -179,7 +179,7 @@ export default function FindingsPage() {
         setActiveRetests(Object.fromEntries(rows.map((item) => [item.finding_id, item])));
         failed = false;
       } catch (error) {
-        if (!disposed && !failed) toast.error(`加载复测状态失败：${(error as Error).message}`);
+        if (!disposed && !failed) toast.error(`Failed to load retest state: ${(error as Error).message}`);
         failed = true;
       } finally {
         if (!disposed) timer = setTimeout(() => void refreshRetests(), 3000);
@@ -290,9 +290,9 @@ export default function FindingsPage() {
         ids: [...selectedIds],
       });
       setExportOpen(false);
-      toast.success("已开始下载导出文件");
+      toast.success("Export download started");
     } catch (e) {
-      toast.error(`导出失败：${(e as Error).message}`);
+      toast.error(`Export failed: ${(e as Error).message}`);
     } finally {
       setExporting(false);
     }
@@ -362,7 +362,7 @@ export default function FindingsPage() {
     } catch (e) {
       if (request !== assetTreeRequest.current || activeFilterFingerprint.current !== requestFilter) return;
       setAssetTree((current) => ({ ...current, loading: false }));
-      toast.error(`资产树加载失败：${(e as Error).message}`);
+      toast.error(`Failed to load the asset tree: ${(e as Error).message}`);
     }
   }, [filterFingerprint, severity, status, vulnclass, task, query, sort]);
 
@@ -607,7 +607,7 @@ export default function FindingsPage() {
       setFindings((cur) => cur.map((x) => (isSameFinding(x, f) ? { ...x, status: next } : x)));
       try {
         await api.setFindingStatus(f.finding_id, next);
-        toast.success(`已标记为「${statusMeta("finding", next).label}」`);
+        toast.success(`Marked as "${statusMeta("finding", next).label}"`);
         // refresh stat cards (pending count) and drop the row if it no longer matches the status filter
         api
           .findingStats()
@@ -623,7 +623,7 @@ export default function FindingsPage() {
         refreshAfterMutation(f);
       } catch (e) {
         setFindings((cur) => cur.map((x) => (isSameFinding(x, f) ? { ...x, status: prev } : x)));
-        toast.error(`更新失败：${(e as Error).message}`);
+        toast.error(`Update failed: ${(e as Error).message}`);
       }
     },
     [refreshAfterMutation, setFindings, status],
@@ -678,7 +678,7 @@ export default function FindingsPage() {
               : x,
           ),
         );
-        toast.success("已保存");
+        toast.success("Saved");
         api
           .findingStats()
           .then(setStats)
@@ -687,7 +687,7 @@ export default function FindingsPage() {
           });
         refreshAfterMutation(f);
       } catch (e) {
-        toast.error(`保存失败：${(e as Error).message}`);
+        toast.error(`Save failed: ${(e as Error).message}`);
       } finally {
         setSaving(false);
       }
@@ -711,7 +711,7 @@ export default function FindingsPage() {
         setFlat((cur) => ({ ...cur, total: Math.max(0, cur.total - 1) }));
         const rowKey = findingRowKey(f);
         setExpanded((cur) => (cur === rowKey ? null : cur));
-        toast.success("已删除漏洞");
+        toast.success("Finding deleted");
         api
           .findingStats()
           .then(setStats)
@@ -720,7 +720,7 @@ export default function FindingsPage() {
           });
         refreshAfterMutation(f, true);
       } catch (e) {
-        toast.error(`删除失败：${(e as Error).message}`);
+        toast.error(`Delete failed: ${(e as Error).message}`);
       }
     },
     [refreshAfterMutation, setFindings],
@@ -738,26 +738,26 @@ export default function FindingsPage() {
       const result = await api.deepenFinding(deepenFinding.finding_id, deepenDescription.trim());
       toast.success(
         result.queued
-          ? `深入意图 #${result.intent_id} 已进入任务队列`
-          : `已创建高优先级 Worker 意图 #${result.intent_id}`,
+          ? `Deep-dive intent #${result.intent_id} queued`
+          : `High-priority worker intent #${result.intent_id} created`,
       );
       refreshAfterMutation(deepenFinding);
       setDeepenFinding(null);
       setDeepenDescription("");
     } catch (error) {
-      toast.error(`提交失败：${(error as Error).message}`);
+      toast.error(`Submit failed: ${(error as Error).message}`);
     } finally {
       setDeepening(false);
     }
   }
 
   const statCards = [
-    { label: "发现总数", value: stats.total, icon: BugIcon },
-    { label: "待处理", value: stats.pending, tone: "text-amber-500", icon: ClockIcon },
-    { label: "严重", value: stats.critical, tone: "text-rose-600", icon: ShieldAlertIcon },
-    { label: "高危", value: stats.high, tone: "text-red-500", icon: TriangleAlertIcon },
-    { label: "中危", value: stats.medium, tone: "text-amber-500", icon: TriangleAlertIcon },
-    { label: "低危", value: stats.low, tone: "text-slate-500", icon: InfoIcon },
+    { label: "Total findings", value: stats.total, icon: BugIcon },
+    { label: "Pending", value: stats.pending, tone: "text-amber-500", icon: ClockIcon },
+    { label: "Critical", value: stats.critical, tone: "text-rose-600", icon: ShieldAlertIcon },
+    { label: "High", value: stats.high, tone: "text-red-500", icon: TriangleAlertIcon },
+    { label: "Medium", value: stats.medium, tone: "text-amber-500", icon: TriangleAlertIcon },
+    { label: "Low", value: stats.low, tone: "text-slate-500", icon: InfoIcon },
   ];
 
   // 导出弹窗里「当前筛选」的条数:两个视图的筛选一致,只是统计口径来源不同。
@@ -796,7 +796,7 @@ export default function FindingsPage() {
           </div>
         ) : (
           <>
-            <FindingsTable items={flat.items} selectAllLabel="选择当前页全部" {...rowProps} />
+            <FindingsTable items={flat.items} selectAllLabel="Select all on this page" {...rowProps} />
             <TablePagination
               page={flatPage}
               pageSize={flatPageSize}
@@ -853,8 +853,8 @@ export default function FindingsPage() {
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="检索漏洞内容"
-              aria-label="检索漏洞内容"
+              placeholder="Search finding content"
+              aria-label="Search finding content"
             />
             <InputGroupAddon>
               <SearchIcon aria-hidden="true" />
@@ -871,14 +871,14 @@ export default function FindingsPage() {
           >
             {(
               [
-                ["all", "全部"],
-                ["critical", "严重"],
-                ["high", "高危"],
-                ["medium", "中危"],
-                ["low", "低危"],
+                ["all", "All"],
+                ["critical", "Critical"],
+                ["high", "High"],
+                ["medium", "Medium"],
+                ["low", "Low"],
               ] as const
             ).map(([val, label]) => (
-              <ToggleGroupItem key={val} value={val} aria-label={`按${label}等级筛选`}>
+              <ToggleGroupItem key={val} value={val} aria-label={`Filter by ${label} level`}>
                 {label}
               </ToggleGroupItem>
             ))}
@@ -886,7 +886,7 @@ export default function FindingsPage() {
 
           <Select value={status} onValueChange={(v) => setStatus(v as "all" | FindingStatus)}>
             <SelectTrigger size="sm" className="w-32">
-              <SelectValue placeholder="状态" />
+              <SelectValue placeholder="State" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">全部状态</SelectItem>
@@ -900,7 +900,7 @@ export default function FindingsPage() {
 
           <Select value={vulnclass} onValueChange={setVulnclass}>
             <SelectTrigger size="sm" className="w-40">
-              <SelectValue placeholder="漏洞类型" />
+              <SelectValue placeholder="Vulnerability type" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">全部类型</SelectItem>
@@ -914,14 +914,14 @@ export default function FindingsPage() {
 
           <Select value={task} onValueChange={setTask}>
             <SelectTrigger size="sm" className="w-48">
-              <SelectValue placeholder="任务" />
+              <SelectValue placeholder="Task" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">全部任务</SelectItem>
               <SelectItem value={UNASSIGNED_TASK}>未关联 / 任务已删除</SelectItem>
               {(stats.tasks ?? []).map((t) => {
                 const id = String(t.id);
-                const label = t.name || t.description || `任务 #${id}（已删除）`;
+                const label = t.name || t.description || `Task #${id} (deleted)`;
                 return (
                   <SelectItem key={id} value={id}>
                     <span className="flex w-full items-center gap-2">
@@ -1047,13 +1047,13 @@ export default function FindingsPage() {
                         <div className="flex min-w-0 flex-col gap-1">
                           <CardTitle className="truncate text-sm">
                             {group.task_id === null
-                              ? "未关联 / 任务已删除"
+                              ? "Unlinked / task deleted"
                               : group.task_name
-                                ? `${group.task_name}（任务 #${group.task_id}）`
-                                : `任务 #${group.task_id}`}
+                                ? `${group.task_name} (task #${group.task_id})`
+                                : `Task #${group.task_id}`}
                           </CardTitle>
                           <CardDescription className="truncate" title={group.task_description}>
-                            {group.task_description || "来源任务不可用"}
+                            {group.task_description || "Source task unavailable"}
                           </CardDescription>
                         </div>
                       </button>
@@ -1076,7 +1076,7 @@ export default function FindingsPage() {
                           <Button size="icon-sm" variant="ghost" asChild>
                             <Link
                               href={`/function/tasks/detail?id=${group.task_id}`}
-                              aria-label={`查看任务 #${group.task_id}`}
+                              aria-label={`View task #${group.task_id}`}
                             >
                               <ArrowUpRightIcon />
                             </Link>
@@ -1093,7 +1093,7 @@ export default function FindingsPage() {
                         </div>
                       ) : (
                         <>
-                          <FindingsTable items={state.items} selectAllLabel="选择本组当前页全部" {...rowProps} />
+                          <FindingsTable items={state.items} selectAllLabel="Select all on this page in this group" {...rowProps} />
                           <TablePagination
                             page={state.page}
                             pageSize={state.pageSize}
@@ -1173,7 +1173,7 @@ export default function FindingsPage() {
                 value={deepenDescription}
                 onChange={(event) => setDeepenDescription(event.target.value)}
                 maxLength={4000}
-                placeholder="描述需要验证的利用路径、边界条件、目标或期望证据"
+                placeholder="Describe the exploitation path, boundary conditions, target or expected evidence to verify"
                 disabled={deepening}
               />
               <FieldDescription className="flex justify-between gap-3">
@@ -1253,7 +1253,7 @@ export default function FindingsPage() {
               取消
             </Button>
             <Button onClick={doExport} disabled={exporting || (exportScope === "selected" && selectedIds.size === 0)}>
-              <DownloadIcon /> {exporting ? "导出中…" : "导出"}
+              <DownloadIcon /> {exporting ? "Exporting…" : "Export"}
             </Button>
           </DialogFooter>
         </DialogContent>

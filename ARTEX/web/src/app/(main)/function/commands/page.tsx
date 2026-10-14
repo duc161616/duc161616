@@ -140,14 +140,14 @@ export default function CommandsPage() {
         <div className="relative max-w-sm flex-1">
           <SearchIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="搜索工具 / 参数..."
+            placeholder="Search tools / parameters..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="h-8 pl-8"
           />
         </div>
         <Input
-          placeholder="任务 ID"
+          placeholder="Task ID"
           className="h-8 w-28"
           value={taskFilter}
           onChange={(e) => setTaskFilter(e.target.value.replace(/\D/g, ""))}
@@ -278,7 +278,7 @@ export default function CommandsPage() {
           <DialogHeader>
             <DialogTitle>工具调用统计</DialogTitle>
             <DialogDescription>
-              {taskFilter || queryQ ? "当前筛选条件下的全部记录" : "全部工具执行记录"}
+              {taskFilter || queryQ ? "Every record under the current filter" : "All tool execution records"}
               {stats.length > 0 && (
                 <>
                   {" · "}
@@ -286,7 +286,7 @@ export default function CommandsPage() {
                   <span className="tabular-nums">{statsTotal}</span> 次调用
                   {statsErrors > 0 && (
                     <>
-                      {" · 失败 "}
+                      {" · failed "}
                       <span className="tabular-nums text-red-600 dark:text-red-400">{statsErrors}</span>
                     </>
                   )}
@@ -378,7 +378,7 @@ export default function CommandsPage() {
                         selected.is_error && "text-red-600 dark:text-red-400",
                       )}
                     >
-                      {selected.output || "（空）"}
+                      {selected.output || "(empty)"}
                     </pre>
                   </div>
                 </div>

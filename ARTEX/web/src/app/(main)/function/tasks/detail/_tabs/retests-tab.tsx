@@ -20,7 +20,7 @@ import type { Finding, FindingsPage } from "@/lib/types";
 const PAGE_SIZE = 20;
 
 function findingLabel(finding: Finding) {
-  return finding.name?.trim() || finding.vulnclass.trim() || "未分类";
+  return finding.name?.trim() || finding.vulnclass.trim() || "Uncategorized";
 }
 
 export function RetestsTab({ taskId }: { taskId: string }) {
@@ -94,7 +94,7 @@ export function RetestsTab({ taskId }: { taskId: string }) {
                 <Button
                   variant={finding.id === selectedId ? "secondary" : "ghost"}
                   className="h-auto w-full shrink-0 flex-col items-start gap-2 whitespace-normal py-3 text-left"
-                  aria-label={`选择漏洞：${findingLabel(finding)}`}
+                  aria-label={`Select finding: ${findingLabel(finding)}`}
                   aria-pressed={finding.id === selectedId}
                   onClick={() => setSelectedId(finding.id)}
                 >
@@ -120,7 +120,7 @@ export function RetestsTab({ taskId }: { taskId: string }) {
               <Button
                 variant="outline"
                 size="icon-sm"
-                aria-label="上一页漏洞"
+                aria-label="Previous findings"
                 disabled={page === 1}
                 onClick={() => setPage(page - 1)}
               >
@@ -132,7 +132,7 @@ export function RetestsTab({ taskId }: { taskId: string }) {
               <Button
                 variant="outline"
                 size="icon-sm"
-                aria-label="下一页漏洞"
+                aria-label="Next findings"
                 disabled={page * PAGE_SIZE >= data.total}
                 onClick={() => setPage(page + 1)}
               >

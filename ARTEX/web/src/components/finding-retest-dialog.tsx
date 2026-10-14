@@ -42,9 +42,9 @@ export function FindingRetestDialog({ findingId, findingName, onClose, onStarted
       const result = await api.startFindingRetest(findingId, notes.trim());
       onStarted?.(result.retest);
       onClose();
-      toast.success(result.created ? "复测已启动，可点击「复测中」查看会话" : "该漏洞正在复测，可查看已有会话");
+      toast.success(result.created ? "Retest started; click \"Retesting\" to open the session" : "This finding is being retested; you can open the session");
     } catch (e) {
-      toast.error(`发起复测失败：${(e as Error).message}`);
+      toast.error(`Failed to start retest: ${(e as Error).message}`);
     } finally {
       submitLock.current = false;
       setSubmitting(false);
@@ -72,7 +72,7 @@ export function FindingRetestDialog({ findingId, findingName, onClose, onStarted
               rows={4}
               disabled={submitting}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="例如：使用原测试账号验证原接口；修复版本为 v2。"
+              placeholder="e.g. verify the original interface with the original test account; the fixed version is v2."
             />
             <FieldDescription>可补充修复版本、测试条件或本次限制。</FieldDescription>
           </Field>
@@ -83,7 +83,7 @@ export function FindingRetestDialog({ findingId, findingName, onClose, onStarted
           </Button>
           <Button disabled={submitting} onClick={() => void start()}>
             {submitting ? <Spinner data-icon="inline-start" /> : <RotateCcwIcon data-icon="inline-start" />}
-            {submitting ? "正在创建…" : "开始复测"}
+            {submitting ? "Creating…" : "Start retest"}
           </Button>
         </DialogFooter>
       </DialogContent>

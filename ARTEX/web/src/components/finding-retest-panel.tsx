@@ -19,13 +19,13 @@ import { api } from "@/lib/api";
 import type { FindingRetest } from "@/lib/types";
 
 const statusLabels = {
-  pending: "等待启动",
-  running: "复测中",
-  completed: "已完成",
-  failed: "复测失败",
-  stopped: "已停止",
+  pending: "Awaiting start",
+  running: "Retesting",
+  completed: "Completed",
+  failed: "Retest failed",
+  stopped: "Stopped",
 };
-const verdictLabels = { reproduced: "仍可复现", fixed: "已修复", inconclusive: "无法确认" };
+const verdictLabels = { reproduced: "Still reproducible", fixed: "Fixed", inconclusive: "Inconclusive" };
 
 function active(r: FindingRetest) {
   return r.status === "pending" || r.status === "running";
@@ -89,7 +89,7 @@ export function FindingRetestPanel({
         </div>
         {running?.conversation_id != null ? (
           <Button asChild variant="outline" size="sm">
-            <Link href={`/chat?c=${running.conversation_id}`} title="查看正在进行的复测会话">
+            <Link href={`/chat?c=${running.conversation_id}`} title="View the running retest session">
               <Spinner data-icon="inline-start" aria-hidden="true" />
               复测中
             </Link>

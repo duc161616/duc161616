@@ -55,14 +55,14 @@ export default function LoginPage() {
       .then(({ initialized }) => {
         if (!initialized) router.replace("/setup");
       })
-      .catch(() => setError("无法连接到后端服务"))
+      .catch(() => setError("Cannot reach the backend service"))
       .finally(() => setChecking(false));
   }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!agreed) {
-      setError("请先阅读并同意《使用须知》");
+      setError("Read and accept the Terms of Use first");
       return;
     }
     setLoading(true);
@@ -72,7 +72,7 @@ export default function LoginPage() {
       auth.setToken(token);
       window.location.replace("/function/tasks");
     } catch {
-      setError("用户名或密码错误");
+      setError("Wrong username or password");
     } finally {
       setLoading(false);
     }
@@ -118,7 +118,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="请输入密码"
+                placeholder="Enter the password"
                 autoFocus
                 autoComplete="current-password"
               />
@@ -143,7 +143,7 @@ export default function LoginPage() {
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={loading || !password || !agreed}>
-              {loading ? "登录中..." : "登录"}
+              {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
         </div>
@@ -169,7 +169,7 @@ export default function LoginPage() {
             className="max-h-[60vh] space-y-5 overflow-y-auto px-6 py-5 text-sm leading-relaxed text-muted-foreground"
           >
             <p className="rounded-lg border bg-muted/40 p-3 text-foreground/80">
-              本《使用须知与免责声明》（以下简称"本声明"）是您与 ARTEX
+              本《使用须知与免责声明》（以下简称"This notice"）是您与 ARTEX
               项目作者及贡献者之间就使用本软件所达成的约定。请您在使用前审慎阅读、充分理解各条款内容，特别是以粗体或色块标注的免责、责任限制及禁止性条款。
               <span className="font-medium text-foreground">
                 {" "}
@@ -271,7 +271,7 @@ export default function LoginPage() {
                 第七条 · 免责声明与责任限制
               </h4>
               <p className="pl-7">
-                本软件按"现状（AS IS）"与"现有（AS
+                本软件按"AS IS"与"现有（AS
                 AVAILABLE）"状态提供，不附带任何明示或默示的担保，包括但不限于对适销性、特定用途适用性、准确性及不侵权的担保。在适用法律允许的最大范围内，本软件作者及贡献者不对因使用或无法使用本软件（无论使用方式是否得当）而导致的任何直接、间接、偶然、特殊或后果性损失承担责任，包括但不限于数据丢失、系统损坏、业务中断、利润损失或法律纠纷。
               </p>
             </section>
@@ -291,7 +291,7 @@ export default function LoginPage() {
 
           <DialogFooter className="mx-0 mb-0 flex-col items-stretch gap-2 rounded-b-xl px-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-muted-foreground">
-              {readToEnd ? "您已浏览全部条款" : "请将条款滚动至底部后再确认"}
+              {readToEnd ? "You have read every clause" : "Scroll the terms to the bottom before confirming"}
             </p>
             <DialogClose asChild>
               <Button

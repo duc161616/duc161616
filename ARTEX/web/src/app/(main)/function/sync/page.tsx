@@ -28,8 +28,8 @@ type SSStatus = {
 type Dimension = "project" | "task";
 
 const ASSET_TYPES: { key: string; label: string }[] = [
-  { key: "subdomain", label: "子域名" },
-  { key: "service", label: "服务" },
+  { key: "subdomain", label: "Subdomain" },
+  { key: "service", label: "Service" },
   { key: "app", label: "App" },
 ];
 
@@ -61,7 +61,7 @@ function ScopeSentryPanel() {
     api
       .ssStatus()
       .then(setStatus)
-      .catch((e) => toast.error(`读取数据源状态失败：${e.message}`))
+      .catch((e) => toast.error(`Failed to read data source state: ${e.message}`))
       .finally(() => setLoadingStatus(false));
   }, []);
 
@@ -110,25 +110,25 @@ function DataSourceCard({
     setBusy(true);
     try {
       await api.ssDatasource({});
-      toast.success("已创建 ScopeSentry 数据源，请填写地址与密钥");
+      toast.success("ScopeSentry data source created; fill in the URL and key");
       onChanged();
     } catch (e) {
-      toast.error(`创建失败：${(e as Error).message}`);
+      toast.error(`Create failed: ${(e as Error).message}`);
     } finally {
       setBusy(false);
     }
   };
 
   const save = async () => {
-    if (!url.trim()) return toast.error("请填写 MCP 地址");
+    if (!url.trim()) return toast.error("Enter the MCP URL");
     setBusy(true);
     try {
       const r = await api.ssDatasource({ url: url.trim(), api_key: apiKey.trim() });
-      toast.success(r.enabled ? "已保存并启用数据源" : "已保存（尚未满足启用条件）");
+      toast.success(r.enabled ? "Data source saved and enabled" : "Saved (the conditions to enable it are not met yet)");
       setApiKey("");
       onChanged();
     } catch (e) {
-      toast.error(`保存失败：${(e as Error).message}`);
+      toast.error(`Save failed: ${(e as Error).message}`);
     } finally {
       setBusy(false);
     }
@@ -168,7 +168,7 @@ function DataSourceCard({
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>MCP 地址</Label>
-                <Input placeholder="http://<主机>:8082/mcp" value={url} onChange={(e) => setUrl(e.target.value)} />
+                <Input placeholder="http://<host>:8082/mcp" value={url} onChange={(e) => setUrl(e.target.value)} />
               </div>
               <div className="space-y-1.5">
                 <Label>API Key（X-API-Key，留空保留原值）</Label>
@@ -241,7 +241,7 @@ function SyncWorkbench() {
       dimension === "project"
         ? api.ssProjects(page, 50, search).then((r) => setProjects(r.projects))
         : api.ssTasks(page, 50, search).then(setTasks);
-    fn.catch((e) => toast.error(`加载列表失败：${e.message}`)).finally(() => setLoading(false));
+    fn.catch((e) => toast.error(`Failed to load the list: ${e.message}`)).finally(() => setLoading(false));
   }, [dimension, page, search]);
 
   React.useEffect(() => {
@@ -266,8 +266,8 @@ function SyncWorkbench() {
   const chosenTypes = ASSET_TYPES.filter((t) => assetTypes[t.key]).map((t) => t.key);
 
   const runSync = async () => {
-    if (selected.size === 0) return toast.error(`请至少选择一个${dimension === "project" ? "项目" : "任务"}`);
-    if (chosenTypes.length === 0) return toast.error("请至少选择一种资产类型");
+    if (selected.size === 0) return toast.error(`Select at least one ${dimension === "project" ? "project" : "task"}`);
+    if (chosenTypes.length === 0) return toast.error("Select at least one asset type");
     setSyncing(true);
     setResult(null);
     try {
@@ -279,9 +279,9 @@ function SyncWorkbench() {
       });
       setResult(r);
       const total = Object.values(r.synced ?? {}).reduce((a, b) => a + b, 0);
-      toast.success(`同步完成，共入库 ${total} 条资产`);
+      toast.success(`Sync complete, ${total} asset(s) stored`);
     } catch (e) {
-      toast.error(`同步失败：${(e as Error).message}`);
+      toast.error(`Sync failed: ${(e as Error).message}`);
     } finally {
       setSyncing(false);
     }
@@ -381,7 +381,7 @@ function SyncWorkbench() {
             <SearchIcon className="absolute top-1/2 left-2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="pl-8"
-              placeholder={dimension === "project" ? "搜索项目名" : "搜索任务名"}
+              placeholder={dimension === "project" ? "Search project name" : "Search task name"}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => {
@@ -410,7 +410,7 @@ function SyncWorkbench() {
                 <TableHead className="w-10">
                   <Checkbox checked={rows.length > 0 && selected.size === rows.length} onCheckedChange={toggleAll} />
                 </TableHead>
-                <TableHead>{dimension === "project" ? "项目名" : "任务名"}</TableHead>
+                <TableHead>{dimension === "project" ? "Project name" : "Task name"}</TableHead>
                 {dimension === "project" ? (
                   <>
                     <TableHead>标签</TableHead>
@@ -453,7 +453,7 @@ function SyncWorkbench() {
 
 function SyncResult({ result }: { result: Awaited<ReturnType<typeof api.ssSync>> }) {
   const synced = result.synced ?? {};
-  const labels: Record<string, string> = { subdomain: "子域名", service: "服务", app: "App", ip: "IP" };
+  const labels: Record<string, string> = { subdomain: "Subdomain", service: "Service", app: "App", ip: "IP" };
   return (
     <div className="space-y-2 rounded-md border bg-muted/40 p-3 text-sm">
       <div className="flex flex-wrap gap-3">

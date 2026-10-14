@@ -59,24 +59,24 @@ function scopeValue(row: TaskScopeRow): string {
   if (row.value) return row.value;
   if (row.domain) return row.domain;
   if (row.net) return row.net;
-  if (row.company_id) return row.company_name?.trim() ? row.company_name : `企业 #${row.company_id}`;
+  if (row.company_id) return row.company_name?.trim() ? row.company_name : `Company #${row.company_id}`;
   return "—";
 }
 
 const SCOPE_KIND_LABELS: Record<TaskScopeRow["kind"], string> = {
-  company: "公司",
-  root_domain: "根域名",
-  subdomain: "子域名",
+  company: "Company",
+  root_domain: "Root domain",
+  subdomain: "Subdomain",
   ip: "IP",
-  cidr: "网段",
+  cidr: "CIDR",
   icp: "ICP",
-  keyword: "关键词",
+  keyword: "Keyword",
 };
 
 const SCOPE_SOURCE_LABELS: Record<TaskScopeRow["source"], string> = {
-  auto: "自动",
+  auto: "Auto",
   agent: "Agent",
-  manual: "手动",
+  manual: "Manual",
 };
 
 function StatCard({
@@ -183,7 +183,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
       setGoalVuln("");
       await loadGoals();
     } catch (e) {
-      setGoalErr(e instanceof Error ? e.message : "添加失败");
+      setGoalErr(e instanceof Error ? e.message : "Add failed");
     } finally {
       setGoalBusy(false);
     }
@@ -211,7 +211,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
       cancelEditGoal();
       await loadGoals();
     } catch (e) {
-      setGoalErr(e instanceof Error ? e.message : "保存失败");
+      setGoalErr(e instanceof Error ? e.message : "Save failed");
     } finally {
       setGoalBusy(false);
     }
@@ -245,7 +245,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
       setConText("");
       await loadConstraints();
     } catch (e) {
-      setConErr(e instanceof Error ? e.message : "添加失败");
+      setConErr(e instanceof Error ? e.message : "Add failed");
     } finally {
       setConBusy(false);
     }
@@ -273,7 +273,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
       cancelEditConstraint();
       await loadConstraints();
     } catch (e) {
-      setConErr(e instanceof Error ? e.message : "保存失败");
+      setConErr(e instanceof Error ? e.message : "Save failed");
     } finally {
       setConBusy(false);
     }
@@ -298,7 +298,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
       setScopeValueInput("");
       await loadScope();
     } catch (e) {
-      setScopeErr(e instanceof Error ? e.message : "添加失败");
+      setScopeErr(e instanceof Error ? e.message : "Add failed");
     } finally {
       setScopeBusy(false);
     }
@@ -466,7 +466,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
           <div className="flex flex-wrap items-center gap-2">
             <Input
               className="h-7 min-w-56 flex-1 text-sm"
-              placeholder="新增目标，如『拿到管理员账号的越权访问』"
+              placeholder="Add a goal, such as 'obtain unauthorized access to an administrator account'"
               value={goalText}
               onChange={(e) => setGoalText(e.target.value)}
               onKeyDown={(e) => {
@@ -476,7 +476,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
             />
             <Input
               className="h-7 w-32 text-sm"
-              placeholder="漏洞类(可选)"
+              placeholder="Vuln class (optional)"
               value={goalVuln}
               onChange={(e) => setGoalVuln(e.target.value)}
               onKeyDown={(e) => {
@@ -508,7 +508,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
                     />
                     <Input
                       className="h-7 w-32 text-sm"
-                      placeholder="漏洞类(可选)"
+                      placeholder="Vuln class (optional)"
                       value={editVuln}
                       onChange={(e) => setEditVuln(e.target.value)}
                       onKeyDown={(e) => {
@@ -597,7 +597,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
             </NativeSelect>
             <Input
               className="h-7 min-w-56 flex-1 text-sm"
-              placeholder="一条操作约束，如『仅测当前端口，不扫其他端口』"
+              placeholder="An operating constraint, such as 'test the current port only, do not scan other ports'"
               value={conText}
               onChange={(e) => setConText(e.target.value)}
               onKeyDown={(e) => {
@@ -668,7 +668,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
                           : "bg-red-500/15 text-red-600 dark:text-red-400"
                       }`}
                     >
-                      {c.kind === "allow" ? "允许" : "禁止"}
+                      {c.kind === "allow" ? "Allow" : "Forbid"}
                     </span>
                     <span className="min-w-0 flex-1 break-words">{c.text}</span>
                     <Button
@@ -740,7 +740,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
           <CardTitle className="flex items-center gap-2 text-base">
             <CoinsIcon className="size-4 text-amber-500" /> LLM Token 用量
             <span className="text-muted-foreground text-xs font-normal">
-              （按模型统计{tokenTotals.calls > 0 ? `，共 ${tokenTotals.calls} 次调用` : ""}）
+              （按模型统计{tokenTotals.calls > 0 ? `, ${tokenTotals.calls} call(s) in total` : ""}）
             </span>
           </CardTitle>
         </CardHeader>
@@ -835,14 +835,14 @@ export function OverviewTab({ taskId }: { taskId: string }) {
               className="h-7 w-56 text-sm"
               placeholder={
                 scopeKind === "company"
-                  ? "公司名或 id"
+                  ? "Company name or id"
                   : scopeKind === "ip" || scopeKind === "cidr"
-                    ? "如 10.0.0.1 或 10.0.0.0/24"
+                    ? "e.g. 10.0.0.1 or 10.0.0.0/24"
                     : scopeKind === "icp"
-                      ? "如 京ICP备12345678号-1"
+                      ? "e.g. ICP filing 12345678-1"
                       : scopeKind === "keyword"
-                        ? "如 企业名称关键词"
-                        : "如 example.com"
+                        ? "e.g. company name keyword"
+                        : "e.g. example.com"
               }
               value={scopeValueInput}
               onChange={(e) => setScopeValueInput(e.target.value)}
@@ -1042,22 +1042,22 @@ export function OverviewTab({ taskId }: { taskId: string }) {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-        <StatCard label="待领意图" value={open.length} icon={ShieldCheckIcon} sub="frontier 开放" />
-        <StatCard label="确认发现" value={taskFindings.length} icon={BugIcon} sub="本任务" />
-        <StatCard label="意图总数" value={intents.length} icon={AlertTriangleIcon} sub="本任务全部意图" />
+        <StatCard label="Queued intents" value={open.length} icon={ShieldCheckIcon} sub="frontier open" />
+        <StatCard label="Confirm finding" value={taskFindings.length} icon={BugIcon} sub="This task" />
+        <StatCard label="Total intents" value={intents.length} icon={AlertTriangleIcon} sub="Every intent in this task" />
       </div>
     </div>
   );
 }
 
 const TASK_RULE_KIND_OPTIONS: { value: AssetInterceptKind; label: string; placeholder: string }[] = [
-  { value: "exact_domain", label: "域名(全等)", placeholder: "example.gov.cn" },
-  { value: "exact_ip", label: "IP(全等)", placeholder: "203.0.113.10" },
-  { value: "exact_url", label: "URL(全等)", placeholder: "https://example.com/login" },
-  { value: "fuzzy_domain", label: "域名(模糊)", placeholder: ".gov.cn" },
-  { value: "fuzzy_ip", label: "IP(模糊)", placeholder: "203.0.113." },
-  { value: "fuzzy_url", label: "URL(模糊)", placeholder: "/admin" },
-  { value: "cidr", label: "CIDR 网段", placeholder: "192.168.0.0/16" },
+  { value: "exact_domain", label: "Domain (exact)", placeholder: "example.gov.cn" },
+  { value: "exact_ip", label: "IP (exact)", placeholder: "203.0.113.10" },
+  { value: "exact_url", label: "URL (exact)", placeholder: "https://example.com/login" },
+  { value: "fuzzy_domain", label: "Domain (fuzzy)", placeholder: ".gov.cn" },
+  { value: "fuzzy_ip", label: "IP (fuzzy)", placeholder: "203.0.113." },
+  { value: "fuzzy_url", label: "URL (fuzzy)", placeholder: "/admin" },
+  { value: "cidr", label: "CIDR range", placeholder: "192.168.0.0/16" },
 ];
 
 const TASK_RULE_KIND_LABEL: Record<AssetInterceptKind, string> = Object.fromEntries(
@@ -1200,7 +1200,7 @@ function TaskInterceptRulesCard({ taskId }: { taskId: string }) {
           />
           <Input
             className="h-7 w-36 text-sm"
-            placeholder="备注(可选)"
+            placeholder="Note (optional)"
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
             disabled={busy}
@@ -1248,7 +1248,7 @@ function TaskInterceptRulesCard({ taskId }: { taskId: string }) {
                   />
                   <Input
                     className="h-7 w-36 text-sm"
-                    placeholder="备注(可选)"
+                    placeholder="Note (optional)"
                     value={editNote}
                     onChange={(e) => setEditNote(e.target.value)}
                     disabled={busy}
@@ -1281,7 +1281,7 @@ function TaskInterceptRulesCard({ taskId }: { taskId: string }) {
                         : "bg-red-500/15 text-red-600 dark:text-red-400"
                     }`}
                   >
-                    {r.action === "allow" ? "允许" : "拦截"}
+                    {r.action === "allow" ? "Allow" : "Intercept"}
                   </span>
                   <span className="text-muted-foreground shrink-0 text-xs">{TASK_RULE_KIND_LABEL[r.kind]}</span>
                   <code className="bg-muted min-w-0 flex-1 truncate rounded px-1.5 py-0.5 text-xs">{r.pattern}</code>

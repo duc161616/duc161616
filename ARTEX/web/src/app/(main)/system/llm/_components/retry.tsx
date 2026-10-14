@@ -52,65 +52,65 @@ type LayerMeta = {
 
 export const RETRY_LAYERS = {
   connect: {
-    title: "建连重试",
-    where: "SDK · 拿到 200 之前",
+    title: "Connect retries",
+    where: "SDK · before a 200 comes back",
     trigger:
-      "连不上或还没拿到 200：连接重置 / 读写超时 / DNS 失败等网络层错误，以及 HTTP 408、429、500、502、503、504。",
-    skips: "其余状态码（400 / 401 / 403 / 404 / 413 / 422 等）都是确定性拒绝，重发也一样失败，直接上抛。",
-    desc: "原样重发同一个请求。流一旦开始（已经拿到 200），中途断开就不归这层管了。",
-    attemptsLabel: "重试次数",
+      "Cannot connect, or no 200 yet: network-level errors such as connection reset, read/write timeout or DNS failure, plus HTTP 408, 429, 500, 502, 503, 504.",
+    skips: "Every other status code (400 / 401 / 403 / 404 / 413 / 422 and so on) is a deterministic refusal; resending fails the same way, so it is raised directly.",
+    desc: "Resend the same request as is. Once the stream has started (a 200 is in hand), a drop midway is no longer this layer's concern.",
+    attemptsLabel: "Retries",
     defAttempts: 3,
-    defInterval: "0.5s→1s→2s 指数（封顶 8s）",
-    offHint: "-1 = 一次都不重试，失败立刻上抛",
+    defInterval: "0.5s->1s->2s exponential (capped at 8s)",
+    offHint: "-1 = never retry, raise the failure immediately",
   },
   empty: {
-    title: "空响应重试",
-    where: "SDK · 仅 openai 格式",
+    title: "Empty-response retries",
+    where: "SDK · openai format only",
     trigger:
-      "HTTP 200、finish_reason 是正常 stop，但整条响应一个内容块都没有——网关空帧、思考字段丢帧、采样打嗝都会长这样。",
-    skips: "因 max_tokens 截断而没有内容的不算（那要靠调高输出上限解决，重发只会再撞一次）。",
-    desc: "重发整个 prompt，所以在长上下文上比较贵，次数不宜给大。",
-    attemptsLabel: "重试次数",
+      "HTTP 200 and finish_reason is a normal stop, yet the whole response contains no content block — gateway empty frames, dropped reasoning fields and sampling hiccups all look like this.",
+    skips: "An empty result caused by max_tokens truncation does not count (that needs a higher output limit; resending only hits it again).",
+    desc: "This resends the whole prompt, so it is expensive on long contexts; keep the count low.",
+    attemptsLabel: "Retries",
     defAttempts: 2,
-    defInterval: "0.5s→1s→2s 指数（封顶 8s）",
-    offHint: "-1 = 空响应直接原样交出",
+    defInterval: "0.5s->1s->2s exponential (capped at 8s)",
+    offHint: "-1 = hand an empty response through as is",
   },
   stream: {
-    title: "同 provider 安全窗口重试",
-    where: "本项目 · 未交付输出前",
+    title: "Retry within the provider's safe window",
+    where: "This project · before output is delivered",
     trigger:
-      "流已经建立（拿到 200）之后才出问题：连接中途断开、供应商 overloaded、流内的 429 / 5xx 错误事件——且一个 token 都还没交给调用方。",
+      "The problem comes only after the stream is established (a 200 is in hand): a mid-stream drop, provider overloaded, or a 429 / 5xx error event inside the stream — and not a single token has reached the caller yet.",
     skips:
-      "额度耗尽（402 / insufficient_quota，交给轮询换配置）、上下文过长（413 / context length，交给压缩）、400 / 401 / 403 / 404 / 422 确定性拒绝，都不重试。",
-    desc: "在同一个配置上重放同一个请求。因为还没交付任何输出，重放不会重复模型输出或工具执行。",
-    attemptsLabel: "重试次数",
+      "None of these are retried: quota exhaustion (402 / insufficient_quota, handed to polling to switch profiles), context too long (413 / context length, handed to compaction), and deterministic 400 / 401 / 403 / 404 / 422 refusals.",
+    desc: "Replay the same request on the same profile. Since no output has been delivered yet, a replay duplicates neither model output nor tool execution.",
+    attemptsLabel: "Retries",
     defAttempts: 2,
-    defInterval: "0.5s→1s 指数（封顶 4s）",
-    offHint: "-1 = 断流直接交给外层的意图重跑",
+    defInterval: "0.5s->1s exponential (capped at 4s)",
+    offHint: "-1 = hand a dropped stream to the outer intent rerun",
   },
   breaker: {
-    title: "轮询熔断",
-    where: "本项目 · 进程级，全局一份",
+    title: "Poll breaker",
+    where: "This project · per process, one globally",
     trigger:
-      "瞬时失败（429、5xx、网络错误）连续累计到阈值时熔断；余额不足（402）、密钥失效（401 / 403）、模型不存在（404）这类确定性失败不看阈值，第一次就熔断。",
-    skips: "成功一次即清零，所以偶尔抽风的配置不会被慢慢攒到熔断。",
-    desc: "熔断后进入冷却，冷却期内轮询直接跳过这个配置。状态落库，重启不丢。",
-    attemptsLabel: "连续失败几次熔断",
+      "Trips when transient failures (429, 5xx, network errors) accumulate to the threshold; deterministic failures such as insufficient balance (402), invalid key (401 / 403) or model not found (404) ignore the threshold and trip on the first occurrence.",
+    skips: "One success resets the count, so an occasionally flaky profile is never slowly accumulated into a trip.",
+    desc: "After tripping, the profile cools down and polling skips it during the cooldown. The state is persisted and survives restarts.",
+    attemptsLabel: "Failures before tripping",
     defAttempts: 3,
-    defInterval: "1min→5min→30min 梯度",
-    offHint: "-1 = 瞬时失败永不熔断（确定性失败仍然熔断）",
+    defInterval: "1min->5min->30min steps",
+    offHint: "-1 = transient failures never trip the breaker (deterministic failures still do)",
   },
   intent: {
-    title: "意图重跑",
-    where: "本项目 · 进程级，全局一份",
+    title: "Rerun intent",
+    where: "This project · per process, one globally",
     trigger:
-      "前面几层都没兜住：worker 以 model_error 收场——内层重试全部用尽，或者流已经开始交付输出后才断掉（那时重放不安全，只能整条重来）。",
-    skips: "额度耗尽已经由轮询换配置处理，不在这里重跑；任务被暂停 / 终止 / 进入收尾时立即让位，不占用退避时间。",
-    desc: "整条意图从头再跑一遍。它是最外层，一次重跑意味着里面几层的次数会再乘一遍。",
-    attemptsLabel: "重跑次数",
+      "None of the earlier layers caught it: the worker ends with model_error — every inner retry is exhausted, or the stream dropped after it had started delivering output (replay is unsafe then, so only a full rerun works).",
+    skips: "Quota exhaustion is handled by polling switching profiles, not rerun here; when the task is paused, killed or wrapping up, it yields at once without consuming backoff time.",
+    desc: "Rerun the whole intent from the start. This is the outermost layer, so one rerun multiplies the counts of every layer inside it.",
+    attemptsLabel: "Rerun count",
     defAttempts: 2,
-    defInterval: "固定 3s",
-    offHint: "-1 = 不重跑，该意图直接判为 blocked",
+    defInterval: "Fixed 3s",
+    offHint: "-1 = no rerun; the intent is judged blocked at once",
   },
 } satisfies Record<string, LayerMeta>;
 
@@ -206,7 +206,7 @@ export function RetryRuleFields({
             id={`${idPrefix}-${layer}-n`}
             min={-1}
             value={value.attempts}
-            placeholder={`默认 ${meta.defAttempts}`}
+            placeholder={`Default ${meta.defAttempts}`}
             onChange={(n) => onChange({ ...value, attempts: n })}
           />
         </div>
@@ -218,10 +218,10 @@ export function RetryRuleFields({
             id={`${idPrefix}-${layer}-ms`}
             min={0}
             value={value.interval_ms}
-            placeholder="默认退避"
+            placeholder="Default backoff"
             onChange={(n) => onChange({ ...value, interval_ms: n })}
           />
-          <span className="text-muted-foreground text-xs">{human ? `固定 ${human}` : meta.defInterval}</span>
+          <span className="text-muted-foreground text-xs">{human ? `Fixed ${human}` : meta.defInterval}</span>
         </div>
       </div>
       {!compact && <p className="text-muted-foreground text-xs">留空 = 用默认；{meta.offHint}。</p>}
@@ -273,7 +273,7 @@ export function RetryPolicyPanel() {
       const p = await api.llmRetryPolicy();
       setPolicy({ ...ZERO_POLICY, ...p });
     } catch (e) {
-      toast.error(`读取重试策略失败：${(e as Error).message}`);
+      toast.error(`Failed to read the retry policy: ${(e as Error).message}`);
     } finally {
       setLoading(false);
     }
@@ -290,9 +290,9 @@ export function RetryPolicyPanel() {
       // 后端会把越界值夹回区间并回传，直接用回传值刷新，所见即所存。
       const saved = await api.saveLLMRetryPolicy(policy);
       setPolicy({ ...ZERO_POLICY, ...saved });
-      toast.success("已保存，即时生效（正在跑的这一轮调用仍用旧参数）");
+      toast.success("Saved and effective at once (the call already in flight keeps the old parameters)");
     } catch (e) {
-      toast.error(`保存失败：${(e as Error).message}`);
+      toast.error(`Save failed: ${(e as Error).message}`);
     } finally {
       setSaving(false);
     }

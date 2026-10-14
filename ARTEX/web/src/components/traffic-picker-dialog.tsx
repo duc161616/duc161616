@@ -92,7 +92,7 @@ export function TrafficPickerDialog({
         [...selected].map((traffic_id) => ({ traffic_id })),
         contextTask,
       );
-      toast.success(`已绑定 ${selected.size} 条流量`);
+      toast.success(`${selected.size} traffic record(s) bound`);
       onBound();
       onClose();
     } catch (e) {
@@ -123,7 +123,7 @@ export function TrafficPickerDialog({
               <Input
                 id="evidence-host"
                 value={host}
-                placeholder="域名或 IP"
+                placeholder="Domain or IP"
                 onChange={(e) => {
                   setHost(e.target.value);
                   setPage(0);
@@ -159,7 +159,7 @@ export function TrafficPickerDialog({
               <Input
                 id="evidence-query"
                 value={query}
-                placeholder="URL / 正文关键词"
+                placeholder="URL / body keyword"
                 onChange={(e) => {
                   setQuery(e.target.value);
                   setPage(0);
@@ -178,7 +178,7 @@ export function TrafficPickerDialog({
                 <TableRow>
                   <TableHead>
                     <Checkbox
-                      aria-label="选择本页未绑定流量"
+                      aria-label="Select unbound traffic on this page"
                       disabled={loading || busy || selectable.length === 0}
                       checked={selectable.length > 0 && selectable.every((e) => selected.has(e.id))}
                       onCheckedChange={(checked) =>
@@ -204,7 +204,7 @@ export function TrafficPickerDialog({
                   <TableRow key={e.id}>
                     <TableCell>
                       <Checkbox
-                        aria-label={`选择流量 ${e.id}`}
+                        aria-label={`Select traffic ${e.id}`}
                         checked={selected.has(e.id) || alreadyBound.has(e.id)}
                         disabled={busy || loading || alreadyBound.has(e.id)}
                         onCheckedChange={(checked) => toggle(e.id, checked === true)}
@@ -230,7 +230,7 @@ export function TrafficPickerDialog({
                 {!rows.length ? (
                   <TableRow>
                     <TableCell colSpan={5} className="py-8 text-center">
-                      {loading ? "加载中…" : "没有匹配的流量"}
+                      {loading ? "Loading…" : "No matching traffic"}
                     </TableCell>
                   </TableRow>
                 ) : null}
@@ -266,7 +266,7 @@ export function TrafficPickerDialog({
               取消
             </Button>
             <Button disabled={busy || selected.size === 0} onClick={() => void save()}>
-              {busy ? "保存中…" : `绑定 ${selected.size} 条流量`}
+              {busy ? "Saving…" : `Bind ${selected.size} traffic record(s)`}
             </Button>
           </DialogFooter>
         </DialogContent>

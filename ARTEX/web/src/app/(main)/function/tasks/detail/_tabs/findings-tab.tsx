@@ -25,7 +25,7 @@ const FINDING_SORT_PREFERENCE_KEY = "artex_task_findings_sort";
 function findingLabel(finding: Finding): string {
   if (finding.name?.trim()) return finding.name;
   if (finding.vulnclass?.trim()) return finding.vulnclass;
-  return "未分类";
+  return "Uncategorized";
 }
 
 const FINDING_STATUSES: FindingStatus[] = [
@@ -118,7 +118,7 @@ function Row({
                 : `/function/findings/detail?id=${f.finding_id}`
             }
             className="text-muted-foreground hover:text-primary inline-flex shrink-0 items-center gap-0.5 text-xs"
-            title="查看漏洞详情"
+            title="View finding detail"
           >
             详情
             <ArrowUpRightIcon className="size-3" />
@@ -172,10 +172,10 @@ export function FindingsTab({ taskId }: { taskId: string }) {
     setFindings((cur) => cur.map((x) => (x.id === f.id ? { ...x, status: next } : x)));
     try {
       await api.setFindingStatus(f.finding_id, next);
-      toast.success(`已标记为「${statusMeta("finding", next).label}」`);
+      toast.success(`Marked as "${statusMeta("finding", next).label}"`);
     } catch (e) {
       setFindings((cur) => cur.map((x) => (x.id === f.id ? { ...x, status: prev } : x)));
-      toast.error("更新失败：" + (e as Error).message);
+      toast.error("Update failed: " + (e as Error).message);
     }
   }, []);
 
@@ -195,7 +195,7 @@ export function FindingsTab({ taskId }: { taskId: string }) {
           <button
             type="button"
             className="inline-flex items-center gap-1 outline-none focus-visible:underline"
-            aria-label={`发现时间当前${sortPreference.direction === "asc" ? "正序" : "倒序"}，点击切换排序方向`}
+            aria-label={`Found-at currently ${sortPreference.direction === "asc" ? "ascending" : "descending"}; click to toggle the order`}
             onClick={() =>
               setSortPreference((current) => ({
                 field: "time",

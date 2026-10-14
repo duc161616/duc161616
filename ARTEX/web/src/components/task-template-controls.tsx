@@ -151,7 +151,7 @@ function TaskTemplateManager({
         .filter((r) => r.pattern !== ""),
     };
     if (!input.name || !input.description || !input.goal) {
-      toast.error("请填写模板名称、描述和目标");
+      toast.error("Enter the template name, description and goal");
       return;
     }
     setSaving(true);
@@ -161,15 +161,15 @@ function TaskTemplateManager({
         onCreated(created);
         setSelectedID(created.id);
         setDraft(templateDraft(created));
-        toast.success("模板已创建");
+        toast.success("Template created");
       } else {
         const updated = await api.updateTaskTemplate(selectedID, input);
         onUpdated(updated);
         setDraft(templateDraft(updated));
-        toast.success("模板已更新");
+        toast.success("Template updated");
       }
     } catch (error) {
-      toast.error(`保存失败：${(error as Error).message}`);
+      toast.error(`Save failed: ${(error as Error).message}`);
     } finally {
       setSaving(false);
     }
@@ -190,16 +190,16 @@ function TaskTemplateManager({
         startNew();
       }
       setDeleteOpen(false);
-      toast.success("模板已删除");
+      toast.success("Template deleted");
     } catch (error) {
-      toast.error(`删除失败：${(error as Error).message}`);
+      toast.error(`Delete failed: ${(error as Error).message}`);
     } finally {
       setDeleting(false);
     }
   }
 
-  let saveLabel = saving ? "保存中" : "保存修改";
-  if (!saving && selectedID == null) saveLabel = "创建模板";
+  let saveLabel = saving ? "Saving" : "Save changes";
+  if (!saving && selectedID == null) saveLabel = "Create template";
 
   return (
     <>
@@ -245,7 +245,7 @@ function TaskTemplateManager({
                     id="task-template-name"
                     value={draft.name}
                     maxLength={120}
-                    placeholder="例如：外部 Web 渗透"
+                    placeholder="e.g. External web pentest"
                     onChange={(event) => updateDraft("name", event.target.value)}
                   />
                 </Field>
@@ -255,7 +255,7 @@ function TaskTemplateManager({
                     id="task-template-description"
                     className="min-h-28"
                     value={draft.description}
-                    placeholder="测试对象与背景"
+                    placeholder="Subject and background"
                     onChange={(event) => updateDraft("description", event.target.value)}
                   />
                 </Field>
@@ -265,7 +265,7 @@ function TaskTemplateManager({
                     id="task-template-goal"
                     className="min-h-28"
                     value={draft.goal}
-                    placeholder="任务需要达成的目标"
+                    placeholder="The goal the task must reach"
                     onChange={(event) => updateDraft("goal", event.target.value)}
                   />
                 </Field>
@@ -321,7 +321,7 @@ function TaskTemplateManager({
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>删除模板「{draft.name || "未命名模板"}」？</AlertDialogTitle>
+            <AlertDialogTitle>删除模板「{draft.name || "Unnamed template"}」？</AlertDialogTitle>
             <AlertDialogDescription>已由该模板创建的任务不会受到影响。</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -335,7 +335,7 @@ function TaskTemplateManager({
               }}
             >
               {deleting && <Spinner data-icon="inline-start" />}
-              {deleting ? "删除中" : "删除"}
+              {deleting ? "Deleting" : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -378,7 +378,7 @@ export function TaskTemplateControls({
       setTemplates(await api.taskTemplates());
     } catch (error) {
       setTemplates([]);
-      toast.error(`加载模板失败：${(error as Error).message}`);
+      toast.error(`Failed to load templates: ${(error as Error).message}`);
     } finally {
       setLoading(false);
     }
@@ -433,8 +433,8 @@ export function TaskTemplateControls({
     if (selectedTemplateID === id) onSelectedTemplateIDChange(null);
   };
 
-  let pickerPlaceholder = loading ? "正在加载模板" : "暂无任务模板";
-  if (!loading && templates.length > 0) pickerPlaceholder = "搜索并选择任务模板";
+  let pickerPlaceholder = loading ? "Loading templates" : "No task templates";
+  if (!loading && templates.length > 0) pickerPlaceholder = "Search and select a task template";
 
   return (
     <>

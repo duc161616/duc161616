@@ -46,7 +46,7 @@ import { api } from "@/lib/api";
 import type { Agent, SkillItem, MCPServer, SkillCall, MissingSkill } from "@/lib/types";
 
 function fmtTime(ts?: string) {
-  if (!ts) return "从未调用";
+  if (!ts) return "Never called";
   return new Date(ts).toLocaleString("zh-CN", {
     month: "2-digit",
     day: "2-digit",
@@ -183,10 +183,10 @@ function SkillsOverview({
   }
 
   const stats: { label: string; value: React.ReactNode; hint?: string }[] = [
-    { label: "Skill 总数", value: skills.length, hint: `${agg.usedCount} 个被调用过` },
-    { label: "累计调用", value: agg.totalCalls },
-    { label: "未使用", value: agg.neverUsed.length, hint: agg.neverUsed.length > 0 ? "从未被任何 agent 加载" : "全部用过" },
-    { label: "未命中调用", value: agg.missingCalls, hint: missing.length > 0 ? `${missing.length} 个不存在的 skill` : "无" },
+    { label: "Total skills", value: skills.length, hint: `${agg.usedCount} called` },
+    { label: "Total calls", value: agg.totalCalls },
+    { label: "Unused", value: agg.neverUsed.length, hint: agg.neverUsed.length > 0 ? "Never loaded by any agent" : "All used" },
+    { label: "Missed calls", value: agg.missingCalls, hint: missing.length > 0 ? `${missing.length} skill(s) that do not exist` : "None" },
   ];
 
   return (
@@ -362,18 +362,18 @@ export default function SkillsPage() {
     setUploading(true);
     try {
       const r = await api.uploadSkill(file, overwrite);
-      toast.success(`已安装 Skill：${r.name}（${r.files} 个文件）`);
+      toast.success(`Skill installed: ${r.name} (${r.files} file(s))`);
       load();
     } catch (e) {
       const msg = (e as Error).message;
       // offer overwrite when the skill already exists
-      if (!overwrite && msg.includes("已存在")) {
-        if (window.confirm(`${msg}\n\n是否覆盖同名 Skill？`)) {
+      if (!overwrite && msg.includes("Exists")) {
+        if (window.confirm(`${msg}\n\nOverwrite the skill with the same name?`)) {
           await uploadZip(file, true);
           return;
         }
       } else {
-        toast.error("上传失败：" + msg);
+        toast.error("Upload failed: " + msg);
       }
     } finally {
       setUploading(false);
@@ -415,7 +415,7 @@ export default function SkillsPage() {
     setFileLoading(true);
     api.readSkillFile(selected.skill, selected.path)
       .then((c) => { setFileContent(c); setDirty(false); })
-      .catch(() => toast.error("读取文件失败"))
+      .catch(() => toast.error("Failed to read file"))
       .finally(() => setFileLoading(false));
   }, [selected]);
 
@@ -469,17 +469,17 @@ export default function SkillsPage() {
     try {
       if (c.kind === "dir") {
         await api.createSkillDir(c.skill, fullPath);
-        toast.success(`已创建文件夹：${fullPath}`);
+        toast.success(`Folder created: ${fullPath}`);
         ensureExpanded(c.skill, fullPath);
       } else {
         await api.writeSkillFile(c.skill, fullPath, "");
-        toast.success(`已创建文件：${fullPath}`);
+        toast.success(`File created: ${fullPath}`);
         setSelected({ skill: c.skill, path: fullPath });
         ensureExpanded(c.skill, c.inDir);
       }
       load();
     } catch (e) {
-      toast.error("创建失败：" + (e as Error).message);
+      toast.error("Create failed: " + (e as Error).message);
     }
   }
 
@@ -492,22 +492,22 @@ export default function SkillsPage() {
   async function deletePath(skill: string, path: string) {
     try {
       await api.deleteSkillPath(skill, path);
-      toast.success(`已删除：${path}`);
+      toast.success(`Deleted: ${path}`);
       if (selected?.skill === skill && selected.path === path) setSelected(null);
       load();
     } catch (e) {
-      toast.error("删除失败：" + (e as Error).message);
+      toast.error("Delete failed: " + (e as Error).message);
     }
   }
 
   async function deleteSkill(name: string) {
     try {
       await api.deleteSkill(name);
-      toast.success(`已删除 Skill：${name}`);
+      toast.success(`Skill deleted: ${name}`);
       if (selected?.skill === name) setSelected(null);
       load();
     } catch (e) {
-      toast.error("删除失败：" + (e as Error).message);
+      toast.error("Delete failed: " + (e as Error).message);
     }
   }
 
@@ -529,10 +529,10 @@ export default function SkillsPage() {
     setSaving(true);
     try {
       await api.writeSkillFile(selected.skill, selected.path, fileContent);
-      toast.success("已保存");
+      toast.success("Saved");
       setDirty(false);
     } catch (e) {
-      toast.error("保存失败：" + (e as Error).message);
+      toast.error("Save failed: " + (e as Error).message);
     } finally { setSaving(false); }
   }
 
@@ -543,12 +543,12 @@ export default function SkillsPage() {
     setDetailMcps(next);
     try {
       await api.updateSkillMeta(skillName, { mcps: next });
-      toast.success(`${mcpOn ? "关联" : "取消关联"}「${mcpName}」`);
+      toast.success(`${mcpOn ? "Link" : "Unlink"} "${mcpName}"`);
       load();
     } catch (e) {
       // roll back on error
       setDetailMcps(detailMcps);
-      toast.error("操作失败：" + (e as Error).message);
+      toast.error("Action failed: " + (e as Error).message);
     }
   }
 
@@ -556,17 +556,17 @@ export default function SkillsPage() {
     const on = (visibility[skillName] ?? []).includes(agentId);
     try {
       await api.toggleSkillVisibility(agentId, skillName, !on);
-      toast.success(`${on ? "取消" : "授予"}「${agentName}」可见`);
+      toast.success(`${on ? "Revoke" : "Grant"} visibility for "${agentName}"`);
       const ids = await api.skillVisibility(skillName);
       setVisibility((v) => ({ ...v, [skillName]: ids }));
     } catch (e) {
-      toast.error("操作失败：" + (e as Error).message);
+      toast.error("Action failed: " + (e as Error).message);
     }
   }
 
   async function createNewSkill() {
-    if (!newName.trim()) { toast.error("请填写 name"); return; }
-    if (!newDesc.trim()) { toast.error("description 为必填项"); return; }
+    if (!newName.trim()) { toast.error("Enter a name"); return; }
+    if (!newDesc.trim()) { toast.error("description is required"); return; }
     setCreatingSkill(true);
     try {
       const name = newName.trim();
@@ -579,13 +579,13 @@ export default function SkillsPage() {
       });
       // apply initial visibility (fire-and-forget per agent; best-effort)
       await Promise.all(newVisibility.map((id) => api.toggleSkillVisibility(id, name, true)));
-      toast.success("已创建 Skill");
+      toast.success("Skill created");
       setNewOpen(false);
       setNewName(""); setNewDesc(""); setNewLicense(""); setNewCompat(""); setNewInst("");
       setNewMcps([]); setNewVisibility([]);
       load();
     } catch (e) {
-      toast.error("创建失败：" + (e as Error).message);
+      toast.error("Create failed: " + (e as Error).message);
     } finally { setCreatingSkill(false); }
   }
 
@@ -642,15 +642,15 @@ export default function SkillsPage() {
               <span className="min-w-0 flex-1 truncate" title={node.path}>{node.name}</span>
               {/* Absolute so a long name can never push the actions out of view */}
               <span className="absolute inset-y-0 right-1 hidden items-center gap-0.5 rounded bg-muted pl-1 group-hover:flex">
-                <Button size="icon" variant="ghost" className="size-5" title="新建文件"
+                <Button size="icon" variant="ghost" className="size-5" title="New file"
                   onClick={(e) => { e.stopPropagation(); startCreate(skill, node.path, "file"); }}>
                   <FilePlusIcon className="size-3 text-muted-foreground" />
                 </Button>
-                <Button size="icon" variant="ghost" className="size-5" title="新建文件夹"
+                <Button size="icon" variant="ghost" className="size-5" title="New folder"
                   onClick={(e) => { e.stopPropagation(); startCreate(skill, node.path, "dir"); }}>
                   <FolderPlusIcon className="size-3 text-muted-foreground" />
                 </Button>
-                <Button size="icon" variant="ghost" className="size-5" title="删除文件夹"
+                <Button size="icon" variant="ghost" className="size-5" title="Delete folder"
                   onClick={(e) => { e.stopPropagation(); setPendingDelete({ kind: "dir", skill, path: node.path }); }}>
                   <Trash2Icon className="size-3 text-destructive" />
                 </Button>
@@ -686,7 +686,7 @@ export default function SkillsPage() {
             isSelected ? "bg-accent" : "bg-muted",
           )}>
             <Button size="icon" variant="ghost" className="size-5"
-              title="删除文件"
+              title="Delete file"
               onClick={(e) => { e.stopPropagation(); setPendingDelete({ kind: "file", skill, path: node.path }); }}>
               <Trash2Icon className="size-3 text-destructive" />
             </Button>
@@ -753,10 +753,10 @@ export default function SkillsPage() {
               className="w-full"
               disabled={uploading}
               onClick={() => uploadRef.current?.click()}
-              title="上传包含 SKILL.md 的 .zip 压缩包"
+              title="Upload a .zip archive containing SKILL.md"
             >
               <UploadIcon className="size-3.5" />
-              {uploading ? "上传中…" : "上传压缩包"}
+              {uploading ? "Uploading…" : "Upload archive"}
             </Button>
           </div>
           {/* Radix viewport wraps children in a display:table div that grows with
@@ -790,7 +790,7 @@ export default function SkillsPage() {
                       {s.calls > 0 && (
                         <span
                           className="shrink-0 rounded bg-muted px-1 text-[10px] tabular-nums text-muted-foreground"
-                          title={`被调用 ${s.calls} 次 · 最近 ${fmtTime(s.last_used)}`}
+                          title={`Called ${s.calls} time(s) · last ${fmtTime(s.last_used)}`}
                         >
                           {s.calls}
                         </span>
@@ -799,15 +799,15 @@ export default function SkillsPage() {
                         "absolute inset-y-0 right-1 hidden items-center gap-0.5 rounded pl-1 group-hover:flex",
                         isSkillSelected ? "bg-accent" : "bg-muted",
                       )}>
-                        <Button size="icon" variant="ghost" className="size-5" title="新建文件"
+                        <Button size="icon" variant="ghost" className="size-5" title="New file"
                           onClick={(e) => { e.stopPropagation(); startCreate(s.name, "", "file"); }}>
                           <FilePlusIcon className="size-3 text-muted-foreground" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="size-5" title="新建文件夹"
+                        <Button size="icon" variant="ghost" className="size-5" title="New folder"
                           onClick={(e) => { e.stopPropagation(); startCreate(s.name, "", "dir"); }}>
                           <FolderPlusIcon className="size-3 text-muted-foreground" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="size-5" title="删除 Skill"
+                        <Button size="icon" variant="ghost" className="size-5" title="Delete skill"
                           onClick={(e) => { e.stopPropagation(); setPendingDelete({ kind: "skill", skill: s.name }); }}>
                           <Trash2Icon className="size-3 text-destructive" />
                         </Button>
@@ -902,7 +902,7 @@ export default function SkillsPage() {
                             <span className="tabular-nums text-muted-foreground">{fmtTime(c.ts)}</span>
                             <Badge variant="outline" className="font-normal">{c.agent_key || "—"}</Badge>
                             <span className="ml-auto text-muted-foreground">
-                              {c.task_id > 0 ? `任务 #${c.task_id}` : c.session_id ? "对话会话" : "—"}
+                              {c.task_id > 0 ? `Task #${c.task_id}` : c.session_id ? "Chat session" : "—"}
                             </span>
                           </div>
                         ))}
@@ -966,7 +966,7 @@ export default function SkillsPage() {
                 <span>/</span>
                 <span className="font-mono">{selected.path}</span>
                 <Button size="sm" className="ml-auto" onClick={saveFile} disabled={!dirty || saving}>
-                  {saving ? "保存中…" : "保存"}
+                  {saving ? "Saving…" : "Save"}
                 </Button>
               </div>
               {fileLoading ? (
@@ -988,16 +988,16 @@ export default function SkillsPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {pendingDelete?.kind === "skill" && `删除 Skill「${pendingDelete.skill}」？`}
-              {pendingDelete?.kind === "dir" && `删除文件夹「${pendingDelete.path}」？`}
-              {pendingDelete?.kind === "file" && `删除文件「${pendingDelete.path}」？`}
+              {pendingDelete?.kind === "skill" && `Delete skill "${pendingDelete.skill}"?`}
+              {pendingDelete?.kind === "dir" && `Delete folder "${pendingDelete.path}"?`}
+              {pendingDelete?.kind === "file" && `Delete file "${pendingDelete.path}"?`}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDelete?.kind === "skill"
-                ? "将删除该 Skill 的全部文件、MCP 关联与可见性配置。此操作不可撤销。"
+                ? "Every file of this skill, its MCP links and its visibility settings will be deleted. This cannot be undone."
                 : pendingDelete?.kind === "dir"
-                  ? "将一并删除该文件夹下的所有文件。此操作不可撤销。"
-                  : "此操作不可撤销。"}
+                  ? "Every file in this folder will be deleted too. This cannot be undone."
+                  : "This cannot be undone."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1006,7 +1006,7 @@ export default function SkillsPage() {
               disabled={deleting}
               onClick={(e) => { e.preventDefault(); void runPendingDelete(); }}
             >
-              {deleting ? "删除中…" : "删除"}
+              {deleting ? "Deleting…" : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1049,7 +1049,7 @@ export default function SkillsPage() {
               <div className="grid gap-1.5">
                 <Label htmlFor="sk-desc">描述 <span className="text-destructive">*</span></Label>
                 <Textarea id="sk-desc" rows={2} className="resize-none"
-                  placeholder="这个 skill 做什么、何时使用。"
+                  placeholder="What this skill does and when to use it."
                   value={newDesc} onChange={(e) => setNewDesc(e.target.value)} />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -1059,14 +1059,14 @@ export default function SkillsPage() {
                 </div>
                 <div className="grid gap-1.5">
                   <Label className="text-muted-foreground text-xs">compatibility</Label>
-                  <Input placeholder="需要 sqlmap、python3" value={newCompat} onChange={(e) => setNewCompat(e.target.value)} />
+                  <Input placeholder="Requires sqlmap and python3" value={newCompat} onChange={(e) => setNewCompat(e.target.value)} />
                 </div>
               </div>
               <div className="flex min-h-0 flex-1 flex-col gap-1.5">
                 <Label htmlFor="sk-inst">正文 <span className="text-muted-foreground text-xs font-normal">（留空自动生成骨架）</span></Label>
                 <Textarea id="sk-inst"
                   className="min-h-40 flex-1 resize-none font-mono text-sm leading-relaxed"
-                  placeholder={"## 执行方法\n\n1. 先探测错误\n2. 区分盲注类型\n\n脚本放 scripts/ 目录。"}
+                  placeholder={"## Method\n\n1. Probe for errors first\n2. Distinguish the blind injection type\n\nPut scripts in the scripts/ directory."}
                   value={newInst} onChange={(e) => setNewInst(e.target.value)} />
               </div>
             </TabsContent>
@@ -1118,7 +1118,7 @@ export default function SkillsPage() {
 
           <SheetFooter className="flex-row justify-end gap-2 border-t px-4 py-3">
             <Button variant="outline" onClick={() => setNewOpen(false)}>取消</Button>
-            <Button onClick={createNewSkill} disabled={creatingSkill}>{creatingSkill ? "创建中…" : "创建"}</Button>
+            <Button onClick={createNewSkill} disabled={creatingSkill}>{creatingSkill ? "Creating…" : "Create"}</Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>

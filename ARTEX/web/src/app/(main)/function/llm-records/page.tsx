@@ -109,7 +109,7 @@ function CopyButton({ text }: { text: string }) {
       size="icon"
       className="size-5 shrink-0"
       disabled={disabled}
-      title={copied ? "已复制" : "复制内容"}
+      title={copied ? "Copied" : "Copy content"}
       onClick={copy}
     >
       {copied ? <CheckIcon className="size-3 text-emerald-600" /> : <CopyIcon className="size-3" />}
@@ -270,7 +270,7 @@ export default function LLMRecordsPage() {
         <div className="relative max-w-sm flex-1">
           <SearchIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="搜索 Session ID..."
+            placeholder="Search session ID..."
             value={session}
             onChange={(e) => setSession(e.target.value)}
             className="h-8 pl-8"
@@ -284,7 +284,7 @@ export default function LLMRecordsPage() {
         />
         <Select value={pickedTask} onValueChange={setPickedTask}>
           <SelectTrigger size="sm" className="w-56">
-            <SelectValue placeholder="选择任务…" />
+            <SelectValue placeholder="Select a task…" />
           </SelectTrigger>
           <SelectContent>
             {tasks.length === 0 ? (
@@ -306,7 +306,7 @@ export default function LLMRecordsPage() {
           size="sm"
           className="h-8"
           disabled={!pickedTask || deleting}
-          title={pickedTask ? undefined : "先在上方选择任务"}
+          title={pickedTask ? undefined : "Select a task above first"}
           onClick={() => setDeleteOpen(true)}
         >
           <Trash2Icon className="size-3.5" />
@@ -341,7 +341,7 @@ export default function LLMRecordsPage() {
               recEnabled ? "text-foreground" : "text-muted-foreground",
             )}
           >
-            {recEnabled ? "录制中" : "已关闭"}
+            {recEnabled ? "Recording" : "Closed"}
           </label>
         </div>
 
@@ -492,7 +492,7 @@ export default function LLMRecordsPage() {
                 size="sm"
                 className="ml-auto h-7 shrink-0 text-xs"
                 disabled={!hasRaw}
-                title={hasRaw ? "查看与 provider 实际收发的 HTTP 原文" : "该记录录制于此功能上线前，无原文"}
+                title={hasRaw ? "View the raw HTTP actually exchanged with the provider" : "This record predates the feature, so there is no raw text"}
                 onClick={() => setRawView((v) => !v)}
               >
                 原文
@@ -510,7 +510,7 @@ export default function LLMRecordsPage() {
             <div className="grid min-h-0 flex-1 grid-cols-2 divide-x">
               <div className="flex min-h-0 min-w-0 flex-col">
                 <div className="flex items-center gap-2 border-b py-0.5 pr-1.5 pl-3 text-[11px] font-medium text-muted-foreground">
-                  <span>Request{showRaw && " · 原文"}</span>
+                  <span>Request{showRaw && " · raw"}</span>
                   <CopyButton text={reqText || ""} />
                 </div>
                 <div className="min-h-0 flex-1 overflow-auto">
@@ -521,14 +521,14 @@ export default function LLMRecordsPage() {
                     </div>
                   ) : (
                     <pre className="p-3 font-mono text-xs break-all whitespace-pre-wrap">
-                      {reqText || "（空）"}
+                      {reqText || "(empty)"}
                     </pre>
                   )}
                 </div>
               </div>
               <div className="flex min-h-0 min-w-0 flex-col">
                 <div className="flex items-center gap-2 border-b py-0.5 pr-1.5 pl-3 text-[11px] font-medium text-muted-foreground">
-                  <span>Response{showRaw && " · 原文（SSE）"}</span>
+                  <span>Response{showRaw && " · raw (SSE)"}</span>
                   <CopyButton text={respText || ""} />
                 </div>
                 <div className="min-h-0 flex-1 overflow-auto">
@@ -542,7 +542,7 @@ export default function LLMRecordsPage() {
                       "p-3 font-mono text-xs break-all whitespace-pre-wrap",
                       selected.status !== "ok" && "text-red-600 dark:text-red-400",
                     )}>
-                      {respText || "（空）"}
+                      {respText || "(empty)"}
                     </pre>
                   )}
                 </div>
@@ -570,7 +570,7 @@ export default function LLMRecordsPage() {
               disabled={deleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleting ? "删除中…" : "确认删除"}
+              {deleting ? "Deleting…" : "Confirm delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

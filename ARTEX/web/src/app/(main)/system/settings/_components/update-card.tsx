@@ -54,13 +54,13 @@ export function UpdateCard() {
       .then((r) => {
         setInfo(r);
         if (!quiet) {
-          if (r.error) toast.error("检查更新失败：" + r.error);
-          else if (r.has_update) toast.success(`发现新版本 ${r.latest}`);
-          else if (r.comparable) toast.success("当前已是最新版本");
+          if (r.error) toast.error("Update check failed: " + r.error);
+          else if (r.has_update) toast.success(`New version ${r.latest} available`);
+          else if (r.comparable) toast.success("Already on the latest version");
         }
       })
       .catch((e) => {
-        if (!quiet) toast.error("检查更新失败：" + (e as Error).message);
+        if (!quiet) toast.error("Update check failed: " + (e as Error).message);
       })
       .finally(() => setChecking(false));
   }, []);
@@ -83,7 +83,7 @@ export function UpdateCard() {
         if (r.ok) {
           const j = (await r.json()) as { version?: string };
           if (j.version && j.version !== fromVersion) {
-            toast.success(`已更新到 ${j.version}，正在重新加载页面`);
+            toast.success(`Updated to ${j.version}, reloading the page`);
             await sleep(800);
             window.location.reload();
             return;
@@ -94,7 +94,7 @@ export function UpdateCard() {
       }
     }
     setRestarting(false);
-    toast.error("等待服务重启超时。请检查后端日志，或确认 artex 是通过 start.sh / start.bat 启动的。");
+    toast.error("Timed out waiting for the service to restart. Check the backend logs, or confirm artex was started with start.sh / start.bat.");
   }, []);
 
   // 订阅更新进度。SSE 不走 Next 的 /api 重写（那层会缓冲，事件推不出来）。
@@ -112,7 +112,7 @@ export function UpdateCard() {
         if (p.phase === "failed") {
           es.close();
           setBusy(false);
-          toast.error("更新失败：" + (p.error || p.message));
+          toast.error("Update failed: " + (p.error || p.message));
           return;
         }
         if (p.phase === "staged") {
@@ -134,23 +134,23 @@ export function UpdateCard() {
     if (!info) return;
     const from = info.current;
     const ok = window.confirm(
-      `确定更新到 ${info.latest}？\n\n` +
-        "更新会重启程序，正在运行的任务会被中断。\n" +
+      `Update to ${info.latest}?\n\n` +
+        "Updating restarts the program, and running tasks are interrupted.\n" +
         (info.mode === "docker"
-          ? "\n注意：容器内更新只替换程序本身，不会更新镜像里的 playwright / nmap 等工具链；" +
-            "若新版本依赖新工具，请改用 docker compose pull。"
+          ? "\nNote: an update inside the container replaces only the program itself, not toolchains in the image such as playwright and nmap;" +
+            "If the new version needs new tools, use docker compose pull instead."
           : ""),
     );
     if (!ok) return;
 
     setBusy(true);
-    setProgress({ phase: "downloading", percent: 0, message: "准备中…" });
+    setProgress({ phase: "downloading", percent: 0, message: "Preparing…" });
     const es = openStream(from);
     api.applyUpdate().catch((e) => {
       es.close();
       setBusy(false);
       setProgress(null);
-      toast.error("启动更新失败：" + (e as Error).message);
+      toast.error("Failed to start update: " + (e as Error).message);
     });
   };
 
@@ -158,7 +158,7 @@ export function UpdateCard() {
     if (!info) return;
     if (
       !window.confirm(
-        "回滚到上一版本？\n\n程序会重启，正在运行的任务会被中断。\n注意：数据库结构不会回退，旧版本可能无法识别新版写入的数据。",
+        "Roll back to the previous version?\n\nThe program restarts, and running tasks are interrupted.\nNote: the database schema is not rolled back, so the older version may not understand data written by the newer one.",
       )
     )
       return;
@@ -167,12 +167,12 @@ export function UpdateCard() {
     api
       .rollbackUpdate()
       .then(() => {
-        toast.success("已切换到上一版本，正在重启…");
+        toast.success("Switched to the previous version, restarting…");
         void waitForNewVersion(from);
       })
       .catch((e) => {
         setBusy(false);
-        toast.error("回滚失败：" + (e as Error).message);
+        toast.error("Rollback failed: " + (e as Error).message);
       });
   };
 
@@ -204,7 +204,7 @@ export function UpdateCard() {
               <Badge variant="outline" className="font-mono">
                 {info.os}/{info.arch}
               </Badge>
-              <Badge variant="outline">{info.mode === "docker" ? "Docker" : "独立程序"}</Badge>
+              <Badge variant="outline">{info.mode === "docker" ? "Docker" : "Standalone binary"}</Badge>
             </>
           )}
           {info?.latest && (
@@ -278,7 +278,7 @@ export function UpdateCard() {
           <div className="space-y-1.5">
             <Progress value={pct} className={downloading ? undefined : "animate-pulse"} />
             <p className="text-xs text-muted-foreground">
-              {restarting ? "正在重启并应用新版本，请稍候（页面会自动刷新）…" : progress?.message}
+              {restarting ? "Restarting to apply the new version, please wait (the page refreshes automatically)…" : progress?.message}
             </p>
           </div>
         )}
@@ -294,7 +294,7 @@ export function UpdateCard() {
             disabled={busy || restarting || !info?.has_update || info?.asset_available === false}
           >
             <DownloadIcon className="size-4" />
-            {info?.has_update ? `更新到 ${info.latest}` : "立即更新"}
+            {info?.has_update ? `Update to ${info.latest}` : "Update now"}
           </Button>
           {info?.has_backup && (
             <Button variant="ghost" size="sm" onClick={doRollback} disabled={busy || restarting}>

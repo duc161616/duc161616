@@ -9,11 +9,11 @@ import type { ParsedCompanyScopeText } from "@/lib/company-scope";
 import type { CompanyScopeKind } from "@/lib/types";
 
 const SCOPE_KIND_LABELS: Record<CompanyScopeKind, string> = {
-  domain: "域名",
+  domain: "Domain",
   ip: "IP",
   cidr: "CIDR",
   icp: "ICP",
-  keyword: "关键词",
+  keyword: "Keyword",
 };
 
 export function ScopeTextEditor({
@@ -21,8 +21,8 @@ export function ScopeTextEditor({
   value,
   onValueChange,
   parsed,
-  label = "资产范围",
-  description = "每行一条，自动识别域名、IP、CIDR、ICP 备案和企业关键词。",
+  label = "Asset scope",
+  description = "One per line; domains, IPs, CIDRs, ICP filings and company keywords are recognized automatically.",
 }: {
   id: string;
   value: string;
@@ -46,7 +46,7 @@ export function ScopeTextEditor({
         rows={8}
         value={value}
         aria-invalid={parsed.errors.length > 0}
-        placeholder={"example.com\n203.0.113.10\n198.51.100.0/24\n京ICP备12345678号-1\n企业名称关键词"}
+        placeholder={"example.com\n203.0.113.10\n198.51.100.0/24\nICP filing 12345678-1\nCompany name keyword"}
         className="min-h-36 resize-y font-mono text-sm"
         onChange={(event) => onValueChange(event.target.value)}
       />

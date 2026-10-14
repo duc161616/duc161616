@@ -251,12 +251,12 @@ export default function TrafficPage() {
 
   // "清空" for the unfiltered purge, "删除" for the host-scoped ones — the dialog's
   // title and its confirm button both follow from which is in play.
-  const deleteVerb = deleteMode === "all" ? "清空" : "删除";
+  const deleteVerb = deleteMode === "all" ? "Clear" : "Delete";
   const deleteTitle = deleteMode
     ? {
-        all: "清空全部流量记录？",
-        selected: `删除选中的 ${selectedHosts.length} 个目标的全部流量？`,
-        filter: "删除该目标的全部流量？",
+        all: "Clear all traffic records?",
+        selected: `Delete all traffic for the ${selectedHosts.length} selected target(s)?`,
+        filter: "Delete all traffic for this target?",
       }[deleteMode]
     : "";
 
@@ -284,15 +284,15 @@ export default function TrafficPage() {
         if (mode === "all") {
           // Reclaimed space is the whole point of compacting an emptied index, so say so.
           const reclaimed = r.reclaimed ?? 0;
-          const freed = reclaimed > 0 ? `，释放 ${fmtBytes(reclaimed)} 存储` : "";
-          toast.success(`已清空 ${r.deleted} 条流量${freed}`);
+          const freed = reclaimed > 0 ? `, freeing ${fmtBytes(reclaimed)} of storage` : "";
+          toast.success(`${r.deleted} traffic record(s) cleared${freed}`);
         }
         setPage(0);
         setReloadTick((t) => t + 1);
       })
       .catch((e) => {
         // Keep the confirmation open so the user can retry a failed deletion.
-        if (mode === "all") toast.error(`清空失败：${(e as Error).message}`);
+        if (mode === "all") toast.error(`Clear failed: ${(e as Error).message}`);
       })
       .finally(() => setDeleting(false));
   };
@@ -312,7 +312,7 @@ export default function TrafficPage() {
         if (alive) setDetail(d);
       })
       .catch(() => {
-        if (alive) setDetail({ req: "（无法加载报文）", resp: "" });
+        if (alive) setDetail({ req: "(cannot load raw message)", resp: "" });
       })
       .finally(() => {
         if (alive) setDetailLoading(false);
@@ -354,7 +354,7 @@ export default function TrafficPage() {
             )}
           >
             <RadioTowerIcon className="size-3.5" />
-            {traffic?.enabled ? "录制中" : "已停用"}
+            {traffic?.enabled ? "Recording" : "Disabled"}
           </span>
           {traffic?.proxy && <span className="font-mono text-xs text-muted-foreground">{traffic.proxy}</span>}
           <span className="text-xs text-muted-foreground">
@@ -369,7 +369,7 @@ export default function TrafficPage() {
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="h-8">
               <ListChecksIcon className="size-3.5" />
-              {selectedHosts.length > 0 ? `选择目标（${selectedHosts.length}）` : "选择目标…"}
+              {selectedHosts.length > 0 ? `Select targets (${selectedHosts.length})` : "Select a target…"}
             </Button>
           </PopoverTrigger>
           <PopoverContent
@@ -389,14 +389,14 @@ export default function TrafficPage() {
                         onClick={() => setHostCountSortDirection((current) => (current === "desc" ? "asc" : "desc"))}
                         aria-label={
                           hostCountSortDirection === "desc"
-                            ? "数据包数量当前倒序，点击切换为正序"
-                            : "数据包数量当前正序，点击切换为倒序"
+                            ? "Packet count is descending; click for ascending"
+                            : "Packet count is ascending; click for descending"
                         }
                       >
                         {hostCountSortDirection === "desc" ? <ArrowDownWideNarrowIcon /> : <ArrowUpNarrowWideIcon />}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>按数据包数量{hostCountSortDirection === "desc" ? "倒序" : "正序"}</TooltipContent>
+                    <TooltipContent>按数据包数量{hostCountSortDirection === "desc" ? "Descending" : "Ascending"}</TooltipContent>
                   </Tooltip>
                 )}
                 {hosts.length > 0 && (
@@ -406,7 +406,7 @@ export default function TrafficPage() {
                     className="h-6 px-2 text-xs"
                     onClick={() => setSelectedHosts(allSelected ? [] : hosts.map((h) => h.host))}
                   >
-                    {allSelected ? "取消全选" : "全选"}
+                    {allSelected ? "Clear selection" : "Select all"}
                   </Button>
                 )}
               </div>
@@ -460,7 +460,7 @@ export default function TrafficPage() {
           size="sm"
           className="h-8"
           disabled={!hostQ || deleting}
-          title={hostQ ? undefined : "先在左侧选择目标或输入 host"}
+          title={hostQ ? undefined : "Pick a target on the left, or type a host"}
           onClick={() => setDeleteMode("filter")}
         >
           <Trash2Icon className="size-3.5" />
@@ -473,7 +473,7 @@ export default function TrafficPage() {
           size="sm"
           className="h-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
           disabled={!traffic?.count || deleting}
-          title={traffic?.count ? "删除全部流量并压实存储" : "当前没有流量记录"}
+          title={traffic?.count ? "Delete all traffic and compact storage" : "No traffic recorded"}
           onClick={() => setDeleteMode("all")}
         >
           <EraserIcon className="size-3.5" />
@@ -482,7 +482,7 @@ export default function TrafficPage() {
         <div className="relative max-w-sm flex-1">
           <SearchIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="搜索全部（URL / 方法 / 类型 / 状态码…）"
+            placeholder="Search everything (URL / method / type / status code…)"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="h-8 pl-8"
@@ -490,7 +490,7 @@ export default function TrafficPage() {
         </div>
         <Select value={method} onValueChange={setMethod}>
           <SelectTrigger size="sm" className="w-32">
-            <SelectValue placeholder="方法" />
+            <SelectValue placeholder="Method" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">全部方法</SelectItem>
@@ -547,7 +547,7 @@ export default function TrafficPage() {
         <span className="pl-1 text-xs font-medium text-muted-foreground">高级筛选</span>
         <div className="relative w-56">
           <Input
-            placeholder="响应内容（正文关键词，≥3字）"
+            placeholder="Response content (body keyword, 3+ characters)"
             value={body}
             onChange={(e) => setBody(e.target.value)}
             className="h-8"
@@ -555,7 +555,7 @@ export default function TrafficPage() {
         </div>
         <div className="relative w-52">
           <Input
-            placeholder="路径（如 /api/user/…）"
+            placeholder="Path (such as /api/user/…)"
             value={path}
             onChange={(e) => setPath(e.target.value)}
             className="h-8"
@@ -563,7 +563,7 @@ export default function TrafficPage() {
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger size="sm" className="w-28">
-            <SelectValue placeholder="状态码" />
+            <SelectValue placeholder="Status code" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">全部状态码</SelectItem>
@@ -579,7 +579,7 @@ export default function TrafficPage() {
           <Input
             type="number"
             min={0}
-            placeholder="最小(B)"
+            placeholder="Min (B)"
             value={respMin}
             onChange={(e) => setRespMin(e.target.value)}
             className="h-8 w-24"
@@ -588,7 +588,7 @@ export default function TrafficPage() {
           <Input
             type="number"
             min={0}
-            placeholder="最大(B)"
+            placeholder="Max (B)"
             value={respMax}
             onChange={(e) => setRespMax(e.target.value)}
             className="h-8 w-24"
@@ -622,7 +622,7 @@ export default function TrafficPage() {
                 <TableRow>
                   <TableHead className="w-10">
                     <Checkbox
-                      aria-label="选择本页流量"
+                      aria-label="Select traffic on this page"
                       checked={exchanges.length > 0 && exchanges.every((e) => selectedFlows.has(e.id))}
                       onCheckedChange={(checked) =>
                         setSelectedFlows((previous) => {
@@ -638,7 +638,7 @@ export default function TrafficPage() {
                   </TableHead>
                   <SortableHead
                     field="ts"
-                    label="时间"
+                    label="Time"
                     activeField={sort.field}
                     direction={sort.direction}
                     onSort={toggleSort}
@@ -649,7 +649,7 @@ export default function TrafficPage() {
                   <TableHead>URL</TableHead>
                   <SortableHead
                     field="status"
-                    label="状态码"
+                    label="Status code"
                     activeField={sort.field}
                     direction={sort.direction}
                     onSort={toggleSort}
@@ -658,7 +658,7 @@ export default function TrafficPage() {
                   <TableHead className="w-36">content-type</TableHead>
                   <SortableHead
                     field="resp_len"
-                    label="响应长度"
+                    label="Response length"
                     activeField={sort.field}
                     direction={sort.direction}
                     onSort={toggleSort}
@@ -676,7 +676,7 @@ export default function TrafficPage() {
                   >
                     <TableCell>
                       <Checkbox
-                        aria-label={`选择流量 ${e.id}`}
+                        aria-label={`Select traffic ${e.id}`}
                         checked={selectedFlows.has(e.id)}
                         onClick={(event) => event.stopPropagation()}
                         onCheckedChange={(checked) =>
@@ -709,7 +709,7 @@ export default function TrafficPage() {
                 {exchanges.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={8} className="py-12 text-center text-sm text-muted-foreground">
-                      {traffic === null ? "加载中…" : "没有匹配的流量。"}
+                      {traffic === null ? "Loading…" : "No matching traffic."}
                     </TableCell>
                   </TableRow>
                 )}
@@ -820,7 +820,7 @@ export default function TrafficPage() {
               disabled={deleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleting ? `${deleteVerb}中…` : `确认${deleteVerb}`}
+              {deleting ? `${deleteVerb}…` : `Confirm ${deleteVerb}`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

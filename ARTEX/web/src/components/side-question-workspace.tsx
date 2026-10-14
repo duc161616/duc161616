@@ -30,17 +30,17 @@ import { cn } from "@/lib/utils";
 type ComposerLayout = "inline" | "stacked";
 
 const preparationLabels = {
-  preparing: "正在准备上下文…",
-  summarizing_history: "正在整理早期旁路问答…",
-  compressing_snapshot: "正在压缩旁路上下文副本…",
-  retrying: "模型上下文超限，正在缩减后重试…",
-  answering: "正在回答…",
+  preparing: "Preparing context…",
+  summarizing_history: "Organizing earlier side Q&A…",
+  compressing_snapshot: "Compacting a copy of the side context…",
+  retrying: "Model context exceeded; retrying with less…",
+  answering: "Answering…",
 };
 
 export function SideQuestionButton({ side }: { side: SideQuestions }) {
   if (!side.enabled) return null;
   return (
-    <Button variant="outline" size="sm" onClick={() => side.setOpen(true)} title="/btw 旁路提问">
+    <Button variant="outline" size="sm" onClick={() => side.setOpen(true)} title="/btw side question">
       <MessageCircleQuestionIcon data-icon="inline-start" />
       旁路提问
     </Button>
@@ -65,9 +65,9 @@ function SidePanel({
   useEffect(() => {
     if (pinned.current && viewport.current) viewport.current.scrollTop = viewport.current.scrollHeight;
   }, [tail?.answer, tail?.id]);
-  const status = { running: "回答中", completed: "已完成", failed: "失败", cancelled: "已停止", interrupted: "已中断" };
+  const status = { running: "Answering", completed: "Completed", failed: "Failed", cancelled: "Stopped", interrupted: "Interrupted" };
   return (
-    <section className="flex h-full min-h-0 flex-col bg-background" aria-label="旁路提问面板">
+    <section className="flex h-full min-h-0 flex-col bg-background" aria-label="Side question panel">
       <div className="flex items-center gap-2 border-b p-3">
         <div className="min-w-0 flex-1">
           <p className="font-medium">
@@ -80,11 +80,11 @@ function SidePanel({
           size="icon-sm"
           onClick={() => setConfirm(true)}
           disabled={!side.items.length || side.busy}
-          aria-label="清空旁路历史"
+          aria-label="Clear side history"
         >
           <Trash2Icon />
         </Button>
-        <Button variant="ghost" size="icon-sm" onClick={() => side.setOpen(false)} aria-label="关闭旁路面板">
+        <Button variant="ghost" size="icon-sm" onClick={() => side.setOpen(false)} aria-label="Close side panel">
           <XIcon />
         </Button>
       </div>
@@ -95,7 +95,7 @@ function SidePanel({
             <p>上下文更新于 {new Date(side.snapshot.captured_at).toLocaleString()}</p>
           </>
         ) : (
-          "主 Agent 首次运行后即可提问"
+          "You can ask once the main agent has run once"
         )}
       </div>
       <div
@@ -134,8 +134,8 @@ function SidePanel({
               {item.context?.estimated_input_tokens != null && (
                 <p className="text-muted-foreground text-xs">
                   最近 {item.context.recent_exchanges} 组问答原文
-                  {item.context.history_summarized && " · 含早期问答摘要"}
-                  {item.context.snapshot_summarized && " · 使用主上下文摘要"}
+                  {item.context.history_summarized && " · includes early Q&A digest"}
+                  {item.context.snapshot_summarized && " · uses the main context digest"}
                 </p>
               )}
               {item.answer && <Markdown text={item.answer} />}
@@ -163,8 +163,8 @@ function SidePanel({
           <InputGroupTextarea
             rows={1}
             className={cn("overflow-y-auto", inlineComposer ? "max-h-40 min-h-0" : "max-h-36 min-h-9")}
-            aria-label="旁路问题"
-            placeholder="询问当前上下文…"
+            aria-label="Side question"
+            placeholder="Ask about the current context…"
             value={side.draft}
             maxLength={4000}
             disabled={side.busy}
@@ -184,7 +184,7 @@ function SidePanel({
                 variant="destructive"
                 size="icon-xs"
                 onClick={() => void side.stop()}
-                aria-label="停止旁路回答"
+                aria-label="Stop side answer"
               >
                 <SquareIcon />
               </InputGroupButton>
@@ -195,7 +195,7 @@ function SidePanel({
                 size="icon-xs"
                 onClick={() => void side.ask(side.draft)}
                 disabled={side.busy || !side.draft.trim() || !side.snapshot?.available}
-                aria-label="发送旁路问题"
+                aria-label="Send a side question"
               >
                 <ArrowUpIcon />
               </InputGroupButton>

@@ -176,11 +176,11 @@ function ToolEditor({
         agents: bound,
         enabled,
       });
-      toast.success(`已保存工具「${tool.key}」`);
+      toast.success(`Tool \"${tool.key}\" saved`);
       onSaved();
       onClose();
     } catch (e) {
-      toast.error("保存失败：" + (e as Error).message);
+      toast.error("Save failed: " + (e as Error).message);
     } finally {
       setSaving(false);
     }
@@ -188,11 +188,11 @@ function ToolEditor({
   async function reset() {
     try {
       await api.resetTool(tool.key);
-      toast.success(`已恢复「${tool.key}」为代码默认`);
+      toast.success(`\"${tool.key}\" restored to the code default`);
       onSaved();
       onClose();
     } catch (e) {
-      toast.error("恢复失败：" + (e as Error).message);
+      toast.error("Resume failed: " + (e as Error).message);
     }
   }
 
@@ -284,7 +284,7 @@ function ToolEditor({
                   <Label className="text-muted-foreground text-[11px]">默认值</Label>
                   <Input
                     className="text-xs"
-                    placeholder={r.scalar ? "（空=无默认）" : "仅标量支持"}
+                    placeholder={r.scalar ? "(empty = no default)" : "Scalar fields only"}
                     disabled={!r.scalar}
                     value={r.defaultStr}
                     onChange={(e) => setRow(i, { defaultStr: e.target.value })}
@@ -341,13 +341,13 @@ function ToolGridCard({ tool, onClick }: { tool: Tool; onClick: () => void }) {
         <Badge
           variant="secondary"
           className="ml-auto px-1.5 py-0 text-[10px] tabular-nums"
-          title={`累计调用 ${tool.calls ?? 0} 次`}
+          title={`Called ${tool.calls ?? 0} time(s)`}
         >
           调用 {tool.calls ?? 0}
         </Badge>
       </div>
       <p className="text-muted-foreground line-clamp-1 h-4 text-xs">
-        {tool.description || "（无描述）"}
+        {tool.description || "(no description)"}
       </p>
       <div className="mt-auto flex flex-wrap gap-1 pt-1">
         {tool.agents.length === 0 && (
@@ -409,7 +409,7 @@ export default function ToolsPage() {
           <SearchIcon className="text-muted-foreground absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2" />
           <Input
             className="h-8 pl-8 text-sm"
-            placeholder="搜索工具名、描述、Agent…"
+            placeholder="Search tool name, description, agent…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -428,14 +428,14 @@ export default function ToolsPage() {
               <CardTitle>系统工具</CardTitle>
               <CardDescription>
                 {query.trim()
-                  ? `${systemTools.length} / ${allSystemCount} 个匹配，点击卡片编辑描述、参数默认值与 Agent 绑定`
-                  : `共 ${allSystemCount} 个，点击卡片编辑描述、参数默认值与 Agent 绑定`}
+                  ? `${systemTools.length} / ${allSystemCount} match; click a card to edit its description, parameter defaults and agent bindings`
+                  : `${allSystemCount} total; click a card to edit its description, parameter defaults and agent bindings`}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {systemTools.length === 0 ? (
                 <p className="text-muted-foreground py-6 text-center text-sm">
-                  {query.trim() ? "没有匹配的系统工具" : "（暂无系统工具，等待后端 seed）"}
+                  {query.trim() ? "No matching system tools" : "(no system tools yet, awaiting the backend seed)"}
                 </p>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -456,8 +456,8 @@ export default function ToolsPage() {
                   <CardTitle>自定义工具</CardTitle>
                   <CardDescription>
                     {query.trim()
-                      ? `shell/command/script/http，${customTools.length} / ${allCustomCount} 个匹配，点击卡片编辑`
-                      : `shell(bash 声明) / command(命令) / script(Python) / http(API)，共 ${allCustomCount} 个，点击卡片编辑`}
+                      ? `shell/command/script/http, ${customTools.length} / ${allCustomCount} match; click a card to edit`
+                      : `shell (bash declaration) / command / script (Python) / http (API), ${allCustomCount} total; click a card to edit`}
                   </CardDescription>
                 </div>
                 <Button size="sm" onClick={() => setCustomEdit("new")}>
@@ -468,7 +468,7 @@ export default function ToolsPage() {
             <CardContent>
               {customTools.length === 0 ? (
                 <p className="text-muted-foreground py-6 text-center text-sm">
-                  {query.trim() ? "没有匹配的自定义工具" : "（暂无自定义工具，点击右上角「新建自定义工具」）"}
+                  {query.trim() ? "No matching custom tools" : "(no custom tools yet; click \"New custom tool\" at the top right)"}
                 </p>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -609,20 +609,20 @@ function CustomToolDialog({
 
   async function save() {
     if (isNew && !/^[a-z][a-z0-9_]*$/.test(key.trim())) {
-      toast.error("key 需小写字母开头，仅含小写字母/数字/下划线");
+      toast.error("key must start with a lowercase letter and contain only lowercase letters, digits and underscores");
       return;
     }
     let schema: Record<string, unknown> = {};
     if (schemaText.trim()) {
-      try { schema = JSON.parse(schemaText); } catch { toast.error("参数 JSON Schema 格式错误"); return; }
+      try { schema = JSON.parse(schemaText); } catch { toast.error("The parameter JSON Schema is malformed"); return; }
     }
     if (kind === "http" && ex.headers.trim()) {
-      try { JSON.parse(ex.headers); } catch { toast.error("headers JSON 格式错误"); return; }
+      try { JSON.parse(ex.headers); } catch { toast.error("headers is not valid JSON"); return; }
     }
     if (kind === "http") {
       const props = (schema as { properties?: Record<string, unknown> }).properties;
       if (!props || Object.keys(props).length === 0) {
-        toast.error("http 工具必须提供参数 JSON Schema（含 properties，不能留空）");
+        toast.error("An http tool must provide a parameter JSON Schema (with properties, not empty)");
         return;
       }
     }
@@ -631,10 +631,10 @@ function CustomToolDialog({
     try {
       if (isNew) await api.createCustomTool({ key: key.trim(), ...payload });
       else await api.updateCustomTool(tool!.key, payload);
-      toast.success(isNew ? "已创建自定义工具" : "已保存");
+      toast.success(isNew ? "Custom tool created" : "Saved");
       onSaved();
     } catch (e) {
-      toast.error("保存失败：" + (e as Error).message);
+      toast.error("Save failed: " + (e as Error).message);
     } finally {
       setSaving(false);
     }
@@ -643,10 +643,10 @@ function CustomToolDialog({
     if (!tool) return;
     try {
       await api.deleteCustomTool(tool.key);
-      toast.success("已删除");
+      toast.success("Deleted");
       onSaved();
     } catch (e) {
-      toast.error("删除失败：" + (e as Error).message);
+      toast.error("Delete failed: " + (e as Error).message);
     }
   }
   // runTest dry-runs the CURRENT form (unsaved) with the sample params, so a
@@ -654,10 +654,10 @@ function CustomToolDialog({
   async function runTest() {
     let params: Record<string, unknown> = {};
     if (paramsText.trim()) {
-      try { params = JSON.parse(paramsText); } catch { toast.error("测试参数 JSON 格式错误"); return; }
+      try { params = JSON.parse(paramsText); } catch { toast.error("The test parameters are not valid JSON"); return; }
     }
     if (kind === "http" && ex.headers.trim()) {
-      try { JSON.parse(ex.headers); } catch { toast.error("headers JSON 格式错误"); return; }
+      try { JSON.parse(ex.headers); } catch { toast.error("headers is not valid JSON"); return; }
     }
     setTesting(true);
     setTestResult(null);
@@ -678,14 +678,14 @@ function CustomToolDialog({
         className="flex flex-col gap-0 p-0 data-[side=right]:w-[45vw] data-[side=right]:sm:max-w-[45vw] data-[side=right]:min-w-[480px]"
       >
         <SheetHeader className="px-4">
-          <SheetTitle>{isNew ? "新建自定义工具" : `编辑 ${tool?.key}`}</SheetTitle>
+          <SheetTitle>{isNew ? "New custom tool" : `Edit ${tool?.key}`}</SheetTitle>
           <SheetDescription>shell=bash 环境声明(只需名称+描述，告知模型可用 bash 调用)；command/script/http 需写执行规格。</SheetDescription>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
           <div className="grid gap-1.5">
             <Label className="text-xs">Key</Label>
-            <Input className="font-mono" placeholder="如 nmap_scan" value={key} disabled={!isNew}
+            <Input className="font-mono" placeholder="e.g. nmap_scan" value={key} disabled={!isNew}
               onChange={(e) => setKey(e.target.value)} />
           </div>
           <div className="grid gap-1.5">
@@ -705,7 +705,7 @@ function CustomToolDialog({
               </SelectContent>
             </Select>
             {kind === "shell" && (
-              <p className="text-muted-foreground text-xs">适合 nmap、sqlmap、ffuf 等出名工具——模型已知用法，只需声明"可在 bash 中调用"即可。名称+描述会追加到 Bash 工具描述里。</p>
+              <p className="text-muted-foreground text-xs">适合 nmap、sqlmap、ffuf 等出名工具——模型已知用法，只需声明"Callable from bash"即可。名称+描述会追加到 Bash 工具描述里。</p>
             )}
           </div>
 
@@ -770,7 +770,7 @@ function CustomToolDialog({
           {kind !== "shell" && (
             <div className="grid gap-1.5">
               <Label className="text-xs">
-                参数 JSON Schema{kind === "http" ? "（http 工具必填，需含 properties）" : "（留空 = 自动给 {args} 薄壳）"}
+                参数 JSON Schema{kind === "http" ? "(required for http tools; must contain properties)" : "(empty = wrap {args} automatically)"}
               </Label>
               <Textarea className="font-mono text-xs" rows={4} value={schemaText}
                 placeholder={'{"type":"object","properties":{"target":{"type":"string"}},"required":["target"]}'}
@@ -805,11 +805,11 @@ function CustomToolDialog({
             <div className="grid gap-1.5 rounded-md border p-3">
               <Label className="text-xs font-medium">测试运行（用当前表单，不会保存）</Label>
               <Textarea className="font-mono text-xs" rows={2} value={paramsText}
-                placeholder={'示例参数 JSON，如 {"target":"example.com"}'}
+                placeholder={'Example parameters as JSON, such as {\"target\":\"example.com\"}'}
                 onChange={(e) => setParamsText(e.target.value)} />
               <div>
                 <Button size="sm" variant="outline" onClick={runTest} disabled={testing}>
-                  <PlayIcon /> {testing ? "运行中…" : "测试运行"}
+                  <PlayIcon /> {testing ? "Running…" : "Test run"}
                 </Button>
               </div>
               {testResult && (
@@ -819,7 +819,7 @@ function CustomToolDialog({
                     (testResult.is_error ? "text-destructive" : "")
                   }
                 >
-                  {testResult.output || "（无输出）"}
+                  {testResult.output || "(no output)"}
                 </pre>
               )}
             </div>
@@ -829,7 +829,7 @@ function CustomToolDialog({
         <Separator />
         <div className="flex items-center gap-2 p-4">
           <Button size="sm" onClick={save} disabled={saving}>
-            <SaveIcon /> {isNew ? "创建" : "保存"}
+            <SaveIcon /> {isNew ? "Create" : "Save"}
           </Button>
           {!isNew && (
             <Button size="sm" variant="outline" className="text-destructive" onClick={del}>

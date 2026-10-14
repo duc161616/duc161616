@@ -65,7 +65,7 @@ export default function SystemSettingsPage() {
   const saveWorkers = () => {
     const n = Number(workers);
     if (!Number.isInteger(n) || n <= 0) {
-      toast.error("并发数必须是大于 0 的整数");
+      toast.error("Concurrency must be an integer greater than 0");
       return;
     }
     setSavingWorkers(true);
@@ -73,9 +73,9 @@ export default function SystemSettingsPage() {
       .setSettings({ workers: n })
       .then((s) => {
         apply(s);
-        toast.success("已保存并发工作 agent 数（对之后启动的任务生效）");
+        toast.success("Concurrent worker count saved (applies to tasks started afterwards)");
       })
-      .catch((e) => toast.error("保存失败：" + (e as Error).message))
+      .catch((e) => toast.error("Save failed: " + (e as Error).message))
       .finally(() => setSavingWorkers(false));
   };
 
@@ -85,9 +85,9 @@ export default function SystemSettingsPage() {
       .setSettings({ python_interpreter: pyInterp.trim() })
       .then((s) => {
         apply(s);
-        toast.success("已保存 Python 解释器配置");
+        toast.success("Python interpreter settings saved");
       })
-      .catch((e) => toast.error("保存失败：" + (e as Error).message))
+      .catch((e) => toast.error("Save failed: " + (e as Error).message))
       .finally(() => setSaving(false));
   };
   const detectPython = () => {
@@ -132,11 +132,11 @@ export default function SystemSettingsPage() {
       .setSettings({ agent_traffic_binding: v })
       .then((s) => {
         apply(s);
-        toast.success(v ? "已开启 Agent 自动绑定流量" : "已关闭 Agent 自动绑定流量");
+        toast.success(v ? "Automatic traffic binding enabled" : "Automatic traffic binding disabled");
       })
       .catch((e) => {
         setAgentTrafficBinding(!v);
-        toast.error(`保存失败：${(e as Error).message}`);
+        toast.error(`Save failed: ${(e as Error).message}`);
       })
       .finally(() => setSaving(false));
   };
@@ -155,11 +155,11 @@ export default function SystemSettingsPage() {
       .setSettings({ noa_compaction: v })
       .then((s) => {
         apply(s);
-        toast.success(v ? "已开启 noa 上下文压缩（对之后启动的运行生效）" : "已关闭 noa 上下文压缩（恢复内置压缩）");
+        toast.success(v ? "noa context compaction enabled (applies to runs started afterwards)" : "noa context compaction disabled (back to the built-in one)");
       })
       .catch((e) => {
         setNoaCompaction(!v); // revert on failure
-        toast.error(`保存失败：${(e as Error).message}`);
+        toast.error(`Save failed: ${(e as Error).message}`);
       });
   };
 
@@ -170,10 +170,10 @@ export default function SystemSettingsPage() {
       .setSettings(patch)
       .then((s) => {
         apply(s);
-        toast.success("已保存网络搜索配置");
+        toast.success("Web search settings saved");
       })
       .catch((e) => {
-        toast.error("保存失败：" + (e as Error).message);
+        toast.error("Save failed: " + (e as Error).message);
         api
           .settings()
           .then(apply)
@@ -189,9 +189,9 @@ export default function SystemSettingsPage() {
       .then((s) => {
         apply(s);
         setBraveKeyInput("");
-        toast.success("已保存 Brave API Key");
+        toast.success("Brave API key saved");
       })
-      .catch((e) => toast.error("保存失败：" + (e as Error).message))
+      .catch((e) => toast.error("Save failed: " + (e as Error).message))
       .finally(() => setSavingKey(false));
   };
 
@@ -202,9 +202,9 @@ export default function SystemSettingsPage() {
       .then((s) => {
         apply(s);
         setTavilyKeyInput("");
-        toast.success("已保存 Tavily API Key");
+        toast.success("Tavily API key saved");
       })
-      .catch((e) => toast.error("保存失败：" + (e as Error).message))
+      .catch((e) => toast.error("Save failed: " + (e as Error).message))
       .finally(() => setSavingTavilyKey(false));
   };
 
@@ -214,9 +214,9 @@ export default function SystemSettingsPage() {
       .setSettings({ web_search_proxy: proxyInput.trim() })
       .then((s) => {
         apply(s);
-        toast.success(proxyInput.trim() ? "已保存出口代理" : "已清除出口代理（改为直连）");
+        toast.success(proxyInput.trim() ? "Egress proxy saved" : "Egress proxy cleared (direct connection)");
       })
-      .catch((e) => toast.error("保存失败：" + (e as Error).message))
+      .catch((e) => toast.error("Save failed: " + (e as Error).message))
       .finally(() => setSavingProxy(false));
   };
 
@@ -226,9 +226,9 @@ export default function SystemSettingsPage() {
       .setSettings({ global_proxy: globalProxyInput.trim() })
       .then((s) => {
         apply(s);
-        toast.success(globalProxyInput.trim() ? "已保存全局代理" : "已清除全局代理（改为直连）");
+        toast.success(globalProxyInput.trim() ? "Global proxy saved" : "Global proxy cleared (direct connection)");
       })
-      .catch((e) => toast.error("保存失败：" + (e as Error).message))
+      .catch((e) => toast.error("Save failed: " + (e as Error).message))
       .finally(() => setSavingGlobalProxy(false));
   };
 
@@ -244,10 +244,10 @@ export default function SystemSettingsPage() {
         tavily_search_api_key: tavilyKeyInput,
       })
       .then((r) => {
-        if (r.ok) toast.success(`搜索测试成功 · ${r.backend} 返回 ${r.count} 条结果`);
-        else toast.error("搜索测试失败：" + (r.error || "未知错误"));
+        if (r.ok) toast.success(`Search test succeeded · ${r.backend} returned ${r.count} result(s)`);
+        else toast.error("Search test failed: " + (r.error || "Unknown error"));
       })
-      .catch((e) => toast.error("搜索测试失败：" + (e as Error).message))
+      .catch((e) => toast.error("Search test failed: " + (e as Error).message))
       .finally(() => setTesting(false));
   };
 
@@ -284,7 +284,7 @@ export default function SystemSettingsPage() {
           </CardHeader>
           <CardContent className="flex items-center justify-between gap-4">
             <Label htmlFor="traffic-capture" className="text-sm font-normal text-muted-foreground">
-              {trafficCapture ? "已开启 · 正在记录流量并注入代理" : "已关闭 · 不记录、不注入代理"}
+              {trafficCapture ? "On · recording traffic and injecting the proxy" : "Off · nothing recorded, no proxy injected"}
             </Label>
             <Switch
               id="traffic-capture"
@@ -311,7 +311,7 @@ export default function SystemSettingsPage() {
           </CardHeader>
           <CardContent className="flex items-center justify-between gap-4">
             <Label htmlFor="agent-traffic-binding" className="text-sm font-normal text-muted-foreground">
-              {agentTrafficBinding ? "已开启 · 会增加 Token 消耗" : "已关闭 · 可继续人工绑定"}
+              {agentTrafficBinding ? "On · increases token usage" : "Off · you can still bind by hand"}
             </Label>
             <Switch
               id="agent-traffic-binding"
@@ -349,7 +349,7 @@ export default function SystemSettingsPage() {
               <Input
                 id="global-proxy"
                 autoComplete="off"
-                placeholder="socks5://user:pass@host:1080 或 http://host:port（留空=直连）"
+                placeholder="socks5://user:pass@host:1080 or http://host:port (empty = direct)"
                 value={globalProxyInput}
                 disabled={!loaded || savingGlobalProxy}
                 onChange={(e) => setGlobalProxyInput(e.target.value)}
@@ -359,7 +359,7 @@ export default function SystemSettingsPage() {
               </Button>
             </div>
             <p className="text-muted-foreground text-xs">
-              {globalProxyInput.trim() ? "已配置 · 所有目标流量经此代理出网" : "未配置 · 目标流量直连出网"}
+              {globalProxyInput.trim() ? "Configured · all target traffic exits through this proxy" : "Not configured · target traffic goes out directly"}
             </p>
           </CardContent>
         </Card>
@@ -381,7 +381,7 @@ export default function SystemSettingsPage() {
           <CardContent className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-4">
               <Label htmlFor="inject-planner" className="text-sm font-normal text-muted-foreground">
-                注入规划者（planner）{injectPlanner ? " · 已开启" : " · 已关闭"}
+                注入规划者（planner）{injectPlanner ? " · on" : " · off"}
               </Label>
               <Switch
                 id="inject-planner"
@@ -392,7 +392,7 @@ export default function SystemSettingsPage() {
             </div>
             <div className="flex items-center justify-between gap-4">
               <Label htmlFor="inject-worker" className="text-sm font-normal text-muted-foreground">
-                注入执行者（worker）{injectWorker ? " · 已开启" : " · 已关闭"}
+                注入执行者（worker）{injectWorker ? " · on" : " · off"}
               </Label>
               <Switch
                 id="inject-worker"
@@ -421,7 +421,7 @@ export default function SystemSettingsPage() {
           </CardHeader>
           <CardContent className="flex items-center justify-between gap-4">
             <Label htmlFor="noa-compaction" className="text-sm font-normal text-muted-foreground">
-              noa 上下文压缩{noaCompaction ? " · 已开启" : " · 已关闭"}
+              noa 上下文压缩{noaCompaction ? " · on" : " · off"}
             </Label>
             <Switch
               id="noa-compaction"
@@ -451,7 +451,7 @@ export default function SystemSettingsPage() {
           <CardContent className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-4">
               <Label htmlFor="web-search" className="text-sm font-normal text-muted-foreground">
-                {webSearch ? "总开关已开启 · 可在各 Agent 配置里单独启用" : "已关闭 · 各 Agent 无法启用网络搜索"}
+                {webSearch ? "Master switch on · enable it per agent in each agent's settings" : "Off · no agent can enable web search"}
               </Label>
               <Switch
                 id="web-search"
@@ -476,7 +476,7 @@ export default function SystemSettingsPage() {
                   }}
                 >
                   <SelectTrigger className="w-48 shrink-0">
-                    <SelectValue placeholder="选择来源" />
+                    <SelectValue placeholder="Select source" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ddgs">DuckDuckGo（ddgs · 免费无 Key）</SelectItem>
@@ -518,7 +518,7 @@ export default function SystemSettingsPage() {
                     id="brave-key"
                     type="password"
                     autoComplete="off"
-                    placeholder={braveKeySet ? "已配置（留空则不变）" : "输入 Brave API Key"}
+                    placeholder={braveKeySet ? "Configured (leave empty to keep)" : "Enter the Brave API key"}
                     value={braveKeyInput}
                     disabled={!loaded || savingKey}
                     onChange={(e) => setBraveKeyInput(e.target.value)}
@@ -553,7 +553,7 @@ export default function SystemSettingsPage() {
                     id="tavily-key"
                     type="password"
                     autoComplete="off"
-                    placeholder={tavilyKeySet ? "已配置（留空则不变）" : "输入 Tavily API Key（tvly-…）"}
+                    placeholder={tavilyKeySet ? "Configured (leave empty to keep)" : "Enter the Tavily API key (tvly-…)"}
                     value={tavilyKeyInput}
                     disabled={!loaded || savingTavilyKey}
                     onChange={(e) => setTavilyKeyInput(e.target.value)}
@@ -584,7 +584,7 @@ export default function SystemSettingsPage() {
                   <Input
                     id="ws-proxy"
                     autoComplete="off"
-                    placeholder="http://host:port 或 socks5://host:port（留空=直连）"
+                    placeholder="http://host:port or socks5://host:port (empty = direct)"
                     value={proxyInput}
                     disabled={!loaded || savingProxy}
                     onChange={(e) => setProxyInput(e.target.value)}
@@ -611,7 +611,7 @@ export default function SystemSettingsPage() {
                   disabled={!loaded || testing}
                   className="shrink-0"
                 >
-                  {testing ? "测试中…" : "测试搜索"}
+                  {testing ? "Testing…" : "Test search"}
                 </Button>
               </div>
             )}
@@ -633,7 +633,7 @@ export default function SystemSettingsPage() {
             <div className="flex items-center gap-2">
               <Input
                 className="font-mono text-sm"
-                placeholder="/usr/bin/python3（留空=自动检测）"
+                placeholder="/usr/bin/python3 (empty = detect automatically)"
                 value={pyInterp}
                 disabled={!loaded || saving}
                 onChange={(e) => setPyInterp(e.target.value)}

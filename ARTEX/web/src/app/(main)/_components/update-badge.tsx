@@ -42,7 +42,7 @@ export function UpdateBadge() {
   return (
     <Link
       href="/system/settings"
-      title={`发现新版本 ${latest}，点击前往更新`}
+      title={`New version ${latest} available, click to update`}
       className="inline-flex items-center gap-1.5 rounded-full bg-primary px-2.5 py-1 font-medium text-primary-foreground text-xs transition-opacity hover:opacity-90"
     >
       {/* 呼吸点：顶栏元素很多，纯文字容易被忽略，动效让它一眼可见。 */}

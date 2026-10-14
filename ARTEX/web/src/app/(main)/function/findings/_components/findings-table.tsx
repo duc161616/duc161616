@@ -129,7 +129,7 @@ export function FindingsTable({
   activeRetests,
   onDeepen,
   onDelete,
-  selectAllLabel = "选择当前页全部",
+  selectAllLabel = "Select all on this page",
 }: FindingsTableProps) {
   const selectableIds = items.map((finding) => finding.finding_id).filter((id): id is string => Boolean(id));
   const selectedCount = selectableIds.filter((id) => selectedIds.has(id)).length;
@@ -186,7 +186,7 @@ export function FindingsTable({
                     <Checkbox
                       checked={selectedIds.has(f.finding_id)}
                       onCheckedChange={(c) => onToggleSelected(f.finding_id as string, c === true)}
-                      aria-label="选择该漏洞"
+                      aria-label="Select this finding"
                     />
                   )}
                 </TableCell>
@@ -205,12 +205,12 @@ export function FindingsTable({
                         href={`/function/findings/detail?id=${f.finding_id}`}
                         onClick={(e) => e.stopPropagation()}
                         className="truncate font-medium hover:text-primary hover:underline"
-                        title="查看发现详情"
+                        title="View finding detail"
                       >
-                        {f.name || f.vulnclass || "未分类"}
+                        {f.name || f.vulnclass || "Uncategorized"}
                       </Link>
                     ) : (
-                      <span className="truncate font-medium">{f.name || f.vulnclass || "未分类"}</span>
+                      <span className="truncate font-medium">{f.name || f.vulnclass || "Uncategorized"}</span>
                     )}
                     <span className="truncate text-xs text-muted-foreground">{f.summary}</span>
                     <Badge variant="outline">流量证据 {f.traffic_count ?? 0} 条</Badge>
@@ -274,14 +274,14 @@ export function FindingsTable({
                   <div className="flex items-center gap-1">
                     {retest ? (
                       <Button asChild size="sm" variant="ghost">
-                        <Link href={`/chat?c=${retest.conversation_id}`} title="查看正在进行的复测会话">
+                        <Link href={`/chat?c=${retest.conversation_id}`} title="View the running retest session">
                           <Spinner data-icon="inline-start" />
                           复测中
                         </Link>
                       </Button>
                     ) : null}
                     {!retest && f.finding_id && !f.inherited ? (
-                      <Button size="sm" variant="ghost" onClick={() => onRetest(f)} title="在独立会话中复测该漏洞">
+                      <Button size="sm" variant="ghost" onClick={() => onRetest(f)} title="Retest this finding in an isolated session">
                         <RotateCcwIcon data-icon="inline-start" />
                         复测
                       </Button>
@@ -299,7 +299,7 @@ export function FindingsTable({
                             size="icon"
                             variant="ghost"
                             className="size-7 text-muted-foreground hover:text-destructive"
-                            aria-label="删除漏洞"
+                            aria-label="Delete finding"
                           >
                             <Trash2Icon className="size-4" />
                           </Button>
@@ -339,7 +339,7 @@ export function FindingsTable({
                             <Input
                               value={edit.name}
                               onChange={(e) => onEditChange((s) => (s ? { ...s, name: e.target.value } : s))}
-                              placeholder="可读标题，留空回退类别"
+                              placeholder="Readable title; empty falls back to the category"
                             />
                           </div>
                           <div className="flex min-w-[10rem] flex-col gap-1">
@@ -347,7 +347,7 @@ export function FindingsTable({
                             <Input
                               value={edit.vulnclass}
                               onChange={(e) => onEditChange((s) => (s ? { ...s, vulnclass: e.target.value } : s))}
-                              placeholder="如 SQL Injection"
+                              placeholder="e.g. SQL Injection"
                             />
                           </div>
                           <div className="flex flex-col gap-1">
@@ -369,7 +369,7 @@ export function FindingsTable({
                             </Select>
                           </div>
                           <Button size="sm" disabled={saving} onClick={() => onSave(f)}>
-                            {saving ? "保存中…" : "保存"}
+                            {saving ? "Saving…" : "Save"}
                           </Button>
                         </div>
                       )}
@@ -409,7 +409,7 @@ export function FindingsTable({
                             {reports[rowKey]?.status === "done" && reports[rowKey]?.text.trim() && (
                               <CopyButton
                                 text={reports[rowKey]?.text}
-                                successMessage="已复制详细报告"
+                                successMessage="Detailed report copied"
                                 variant="ghost"
                                 className="h-6 px-2 text-xs"
                               />

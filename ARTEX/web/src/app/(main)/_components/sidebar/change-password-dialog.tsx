@@ -41,21 +41,21 @@ export function ChangePasswordDialog({
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!oldPassword || !newPassword) {
-      toast.error("请填写当前密码和新密码");
+      toast.error("Enter both the current and the new password");
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("两次输入的新密码不一致");
+      toast.error("The two new passwords do not match");
       return;
     }
     setSaving(true);
     api
       .changePassword(oldPassword, newPassword)
       .then(() => {
-        toast.success("密码已修改");
+        toast.success("Password changed");
         onOpenChange(false);
       })
-      .catch((err) => toast.error(`修改失败：${(err as Error).message}`))
+      .catch((err) => toast.error(`Update failed: ${(err as Error).message}`))
       .finally(() => setSaving(false));
   }
 
@@ -109,7 +109,7 @@ export function ChangePasswordDialog({
               取消
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? "修改中…" : "确认修改"}
+              {saving ? "Updating…" : "Confirm changes"}
             </Button>
           </DialogFooter>
         </form>

@@ -55,10 +55,10 @@ function AgentGridCard({
   async function del() {
     try {
       await api.deleteAgent(agent.key);
-      toast.success(`已删除 Agent「${agent.name}」`);
+      toast.success(`Agent "${agent.name}" deleted`);
       onDeleted();
     } catch (e) {
-      toast.error("删除失败：" + (e as Error).message);
+      toast.error("Delete failed: " + (e as Error).message);
     }
   }
   return (
@@ -84,7 +84,7 @@ function AgentGridCard({
           )}
         </div>
         <p className="text-muted-foreground line-clamp-2 min-h-8 text-xs">
-          {agent.description || "（无描述）"}
+          {agent.description || "(no description)"}
         </p>
         <div className="text-muted-foreground flex flex-wrap gap-1.5 text-[10px]">
           <span className="rounded border px-1.5 py-0.5">MCP {agent.mcp_count ?? 0}</span>
@@ -132,14 +132,14 @@ function CreateAgentDialog({ onCreated }: { onCreated: (key: string) => void }) 
     setBusy(true);
     try {
       const a = await api.createAgent(key.trim(), name.trim(), description.trim());
-      toast.success(`已创建 Agent「${a.name}」`);
+      toast.success(`Agent \"${a.name}\" created`);
       setOpen(false);
       setKey("");
       setName("");
       setDescription("");
       onCreated(a.key);
     } catch (e) {
-      toast.error("创建失败：" + (e as Error).message);
+      toast.error("Create failed: " + (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -167,7 +167,7 @@ function CreateAgentDialog({ onCreated }: { onCreated: (key: string) => void }) 
             <Label htmlFor="agent-key">Key</Label>
             <Input
               id="agent-key"
-              placeholder="如 research_helper"
+              placeholder="e.g. research_helper"
               value={key}
               onChange={(e) => setKey(e.target.value)}
               className="font-mono"
@@ -180,7 +180,7 @@ function CreateAgentDialog({ onCreated }: { onCreated: (key: string) => void }) 
             <Label htmlFor="agent-name">名称</Label>
             <Input
               id="agent-name"
-              placeholder="如 研究助手"
+              placeholder="e.g. Research assistant"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -189,7 +189,7 @@ function CreateAgentDialog({ onCreated }: { onCreated: (key: string) => void }) 
             <Label htmlFor="agent-desc">描述</Label>
             <Textarea
               id="agent-desc"
-              placeholder="一句话说明这个 Agent 是干什么的"
+              placeholder="One sentence on what this agent is for"
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -271,7 +271,7 @@ export default function AgentsPage() {
                     </Badge>
                   )}
                 </SheetTitle>
-                <SheetDescription>{editing.description || "提示词、配置、可见资源与工具绑定"}</SheetDescription>
+                <SheetDescription>{editing.description || "Prompt, settings, visible resources and tool bindings"}</SheetDescription>
               </SheetHeader>
               <AgentEditor agentKey={editing.key} onSaved={reload} />
             </>

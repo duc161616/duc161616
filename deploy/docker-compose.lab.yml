@@ -1,0 +1,39 @@
+# Lab overlay — chạy ARTEX với một target cố ý có lỗ hổng, trong mạng kín.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.lab.yml up -d
+#
+# Dùng cái này cho 2-3 task đầu tiên. Bạn cần thấy agent thực sự quyết định gì,
+# tốn bao nhiêu token, và approval nào bật lên — TRƯỚC khi nó chạm vào bất cứ
+# thứ gì ngoài Internet.
+#
+# !! Overlay này bật -allow-private cho bbguard, vì juiceshop nằm trong mạng
+# !! Docker (172.16/12 — là private, nên mặc định bbguard chặn). ĐỪNG BAO GIỜ
+# !! dùng overlay này cho engagement thật: nó mở đúng lớp bảo vệ ngăn agent
+# !! pivot vào mạng nội bộ của bạn.
+#
+# scope.json cho lab (data/scope.json):
+#   {"program":"lab","handle":"local",
+#    "allow":["juiceshop"],
+#    "deny":[],
+#    "infra":["api.anthropic.com","api.openai.com"]}
+
+services:
+  juiceshop:
+    image: bkimminich/juice-shop
+    networks: [internal]
+    restart: unless-stopped
+    # Không publish port ra host: chỉ ARTEX trong mạng internal thấy nó.
+    # Muốn tự xem bằng browser thì mở dòng dưới.
+    # ports: ["127.0.0.1:3000:3000"]
+
+  bbguard:
+    # command bị overlay THAY THẾ hoàn toàn, nên phải lặp lại đầy đủ.
+    command:
+      - -scope=/data/scope.json
+      - -addr=:8899
+      - -audit=/data/audit.jsonl
+      - -rps=${BB_RPS:-8}
+      - -burst=${BB_BURST:-16}
+      - -host-rps=${BB_HOST_RPS:-3}
+      - -host-burst=${BB_HOST_BURST:-6}
+      - -allow-private

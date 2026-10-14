@@ -175,9 +175,9 @@ const defaultForm = (): RuleForm => ({
 // ---- small components ----
 
 function ActionBadge({ action }: { action: InterceptAction }) {
-  if (action === "allow") return <Badge variant="secondary">允许</Badge>;
-  if (action === "deny")  return <Badge variant="destructive">禁止</Badge>;
-  return <Badge variant="outline" className="border-amber-400 text-amber-600">申请</Badge>;
+  if (action === "allow") return <Badge variant="secondary">Allow</Badge>;
+  if (action === "deny")  return <Badge variant="destructive">Forbid</Badge>;
+  return <Badge variant="outline" className="border-amber-400 text-amber-600">Request</Badge>;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -286,9 +286,9 @@ function JudgeCard() {
         <div className="flex items-center gap-2.5">
           <BotIcon className={`h-5 w-5 shrink-0 ${cfg.enabled ? "text-violet-600" : "text-muted-foreground"}`} />
           <div>
-            <p className="text-sm font-semibold leading-tight">模型兜底审批</p>
+            <p className="text-sm font-semibold leading-tight">Model fallback approval</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              在<span className="font-medium text-foreground">拦截范围</span>内、且<span className="font-medium text-foreground">没有任何拦截规则命中</span>的命令，才由模型做语义判断（放行 / 转人工 / 拦截）
+              In<span className="font-medium text-foreground">Intercept scope</span>within, and<span className="font-medium text-foreground">No intercept rule matched at all</span>commands that do are judged semantically by the model (allow / escalate / block)
             </p>
           </div>
         </div>
@@ -304,13 +304,13 @@ function JudgeCard() {
           <CardContent className="p-4">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">审批 Token 消耗</p>
+                <p className="text-sm font-medium">Approval token usage</p>
                 <p className="text-xs text-muted-foreground">
-                  模型兜底审批累计用量,单独计量(worker=judge),不与各模型配置的统计混在一起
+                  Cumulative usage of model fallback approval, metered separately (worker=judge) rather than mixed into each model profile's statistics
                 </p>
               </div>
               <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={loadUsage}>
-                刷新
+                Refresh
               </Button>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -323,7 +323,7 @@ function JudgeCard() {
             {usage.daily.length > 0 && (
               <div className="mt-4">
                 <p className="mb-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-                  近 30 天每日消耗(输入 + 输出)
+                  Daily usage over the last 30 days (input + output)
                 </p>
                 <JudgeSparkbars daily={usage.daily} />
               </div>
@@ -339,11 +339,11 @@ function JudgeCard() {
             <CardContent className="flex h-full flex-col gap-2 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">审批提示词</p>
-                  <p className="text-xs text-muted-foreground">模型据此判定 ALLOW / ASK / DENY，可直接编辑</p>
+                  <p className="text-sm font-medium">Approval prompt</p>
+                  <p className="text-xs text-muted-foreground">The model decides ALLOW / ASK / DENY from this; it can be edited directly</p>
                 </div>
                 <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={restorePrompt} disabled={saving}>
-                  恢复默认模板
+                  Restore the default template
                 </Button>
               </div>
               <Textarea
@@ -353,7 +353,7 @@ function JudgeCard() {
                 placeholder="Leave empty for the built-in template"
                 spellCheck={false}
               />
-              <p className="text-right text-[11px] text-muted-foreground">{cfg.prompt.length} 字</p>
+              <p className="text-right text-[11px] text-muted-foreground">{cfg.prompt.length}  chars</p>
             </CardContent>
           </Card>
 
@@ -361,15 +361,15 @@ function JudgeCard() {
           <Card className="lg:col-span-2">
             <CardContent className="space-y-5 p-4">
               <div className="space-y-4">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">判定模型与策略</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Decision model and policy</p>
                 <Field label="Approval model">
                   <Select value={String(cfg.profile_id || 0)} onValueChange={(v) => patch({ profile_id: Number(v) })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={FOLLOW_ACTIVE}>跟随激活配置</SelectItem>
+                      <SelectItem value={FOLLOW_ACTIVE}>Follow the active profile</SelectItem>
                       {profiles.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
-                          {p.name}（{p.model}）
+                          {p.name} ({p.model})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -390,9 +390,9 @@ function JudgeCard() {
                   <Select value={cfg.fail_action} onValueChange={(v) => patch({ fail_action: v as JudgeConfig["fail_action"] })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="allow">放行</SelectItem>
-                      <SelectItem value="ask">转人工审批</SelectItem>
-                      <SelectItem value="deny">拦截</SelectItem>
+                      <SelectItem value="allow">Allow</SelectItem>
+                      <SelectItem value="ask">Escalate to human</SelectItem>
+                      <SelectItem value="deny">Intercept</SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
@@ -401,7 +401,7 @@ function JudgeCard() {
               <Separator />
 
               <div className="space-y-4">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">人工审批（模型判为「转人工」时）</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Human approval (when the model says "escalate")</p>
                 <Field label="Approval wait timeout (seconds)">
                   <Input
                     type="number"
@@ -417,8 +417,8 @@ function JudgeCard() {
                   <Select value={cfg.ask_timeout_action} onValueChange={(v) => patch({ ask_timeout_action: v as JudgeConfig["ask_timeout_action"] })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="deny">拦截</SelectItem>
-                      <SelectItem value="allow">放行</SelectItem>
+                      <SelectItem value="deny">Intercept</SelectItem>
+                      <SelectItem value="allow">Allow</SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
@@ -609,9 +609,9 @@ export default function InterceptPage() {
       <div className="flex items-center gap-2.5">
         <ShieldAlertIcon className="h-5 w-5 shrink-0" />
         <div>
-          <h1 className="text-lg font-semibold leading-tight">命令拦截</h1>
+          <h1 className="text-lg font-semibold leading-tight">Command intercept</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            工具执行前先按拦截规则匹配；未命中的命令可交由模型兜底判定
+            Before a tool runs it is matched against the intercept rules; unmatched commands can be judged by the model fallback
           </p>
         </div>
       </div>
@@ -626,16 +626,16 @@ export default function InterceptPage() {
       >
         <div className="flex min-w-0 items-center gap-2 text-sm">
           <ListFilterIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <span className="shrink-0 font-medium">拦截范围</span>
+          <span className="shrink-0 font-medium">Intercept scope</span>
           {scopeTools.length === 0 ? (
             <span className="text-amber-700 dark:text-amber-500">
-              未启用任何工具 — 拦截规则与模型兜底均不会生效
+              No tool has interception enabled — neither the intercept rules nor the model fallback will apply
             </span>
           ) : (
             <>
-              <Badge variant="secondary" className="shrink-0">{scopeTools.length} 个工具</Badge>
-              <span className="truncate text-muted-foreground" title={scopeTools.join("、")}>
-                {scopeTools.join("、")}
+              <Badge variant="secondary" className="shrink-0">{scopeTools.length}  tool(s)</Badge>
+              <span className="truncate text-muted-foreground" title={scopeTools.join(", ")}>
+                {scopeTools.join(", ")}
               </span>
             </>
           )}
@@ -647,52 +647,52 @@ export default function InterceptPage() {
           onClick={openScope}
         >
           <ListFilterIcon className="h-4 w-4" />
-          调整范围
+          Adjust scope
         </Button>
       </div>
 
       <Tabs defaultValue="rules" className="flex-1">
         <TabsList>
-          <TabsTrigger value="rules">拦截规则</TabsTrigger>
-          <TabsTrigger value="judge">模型配置</TabsTrigger>
+          <TabsTrigger value="rules">Intercept rules</TabsTrigger>
+          <TabsTrigger value="judge">Model profile</TabsTrigger>
         </TabsList>
 
         {/* ---- tab: 拦截规则 ---- */}
         <TabsContent value="rules" className="mt-4 flex flex-col gap-4">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
-              按优先级（数字越大越先）逐条匹配，首条命中的规则生效
+              Rules are matched one by one in priority order (higher first); the first match applies
             </p>
             <Button onClick={openNew} size="sm" className="shrink-0">
               <PlusIcon className="h-4 w-4" />
-              新建规则
+              New rule
             </Button>
           </div>
 
           <Card>
             <CardContent className="p-0">
           {loading ? (
-            <p className="p-6 text-sm text-muted-foreground">加载中…</p>
+            <p className="p-6 text-sm text-muted-foreground">Loading…</p>
           ) : rules.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
               <ShieldAlertIcon className="h-8 w-8 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">暂无规则</p>
+              <p className="text-sm text-muted-foreground">No rules</p>
               <Button size="sm" variant="outline" onClick={openNew}>
                 <PlusIcon className="h-4 w-4" />
-                新建第一条规则
+                Create the first rule
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[72px]">优先级</TableHead>
-                  <TableHead>名称</TableHead>
-                  <TableHead className="w-[90px]">目标</TableHead>
-                  <TableHead className="w-[80px]">类型</TableHead>
-                  <TableHead>模式</TableHead>
-                  <TableHead className="w-[72px]">策略</TableHead>
-                  <TableHead className="w-[64px] text-center">启用</TableHead>
+                  <TableHead className="w-[72px]">Priority</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead className="w-[90px]">Goal</TableHead>
+                  <TableHead className="w-[80px]">Type</TableHead>
+                  <TableHead>Mode</TableHead>
+                  <TableHead className="w-[72px]">Policy</TableHead>
+                  <TableHead className="w-[64px] text-center">Enable</TableHead>
                   <TableHead className="w-[80px]" />
                 </TableRow>
               </TableHeader>
@@ -765,7 +765,7 @@ export default function InterceptPage() {
           <SheetHeader className="border-b px-6 py-4">
             <SheetTitle>{editing ? "Edit rule" : "New rule"}</SheetTitle>
             <SheetDescription className="text-xs">
-              优先级越大越先匹配；首条命中规则生效，后续跳过
+              Higher priority matches first; the first matching rule applies and later ones are skipped
             </SheetDescription>
           </SheetHeader>
 
@@ -795,8 +795,8 @@ export default function InterceptPage() {
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tool_name">工具名（tool_name）</SelectItem>
-                  <SelectItem value="tool_input">输入内容（tool_input JSON）</SelectItem>
+                  <SelectItem value="tool_name">Tool name (tool_name)</SelectItem>
+                  <SelectItem value="tool_input">Input (tool_input JSON)</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
@@ -808,8 +808,8 @@ export default function InterceptPage() {
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="string">字符串包含</SelectItem>
-                  <SelectItem value="regex">正则表达式</SelectItem>
+                  <SelectItem value="string">String contains</SelectItem>
+                  <SelectItem value="regex">Regular expression</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
@@ -825,7 +825,7 @@ export default function InterceptPage() {
                 <p className="text-xs text-destructive mt-1">{regexErr}</p>
               )}
               {regexWarn && (
-                <p className="text-xs text-amber-600 mt-1">包含 Go RE2 扩展语法（如 <code className="font-mono">(?i)</code>），浏览器无法预览，提交后由服务端验证</p>
+                <p className="text-xs text-amber-600 mt-1">Includes Go RE2 extended syntax (such as <code className="font-mono">(?i)</code>), the browser cannot preview it; the server validates it on submit</p>
               )}
             </Field>
 
@@ -838,9 +838,9 @@ export default function InterceptPage() {
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="allow">允许 — 直接放行，跳过后续规则</SelectItem>
-                  <SelectItem value="deny">禁止 — 阻断，返回拒绝消息给模型</SelectItem>
-                  <SelectItem value="ask">向用户申请 — 等待审批</SelectItem>
+                  <SelectItem value="allow">Allow — let it through, skip later rules</SelectItem>
+                  <SelectItem value="deny">Deny — block it, return a denial message to the model</SelectItem>
+                  <SelectItem value="ask">Asking the user — awaiting approval</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
@@ -862,8 +862,8 @@ export default function InterceptPage() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">启用审批超时</p>
-                    <p className="text-xs text-muted-foreground">超时后自动处置，不再等待</p>
+                    <p className="text-sm font-medium">Enable approval timeout</p>
+                    <p className="text-xs text-muted-foreground">Handled automatically on timeout, no more waiting</p>
                   </div>
                   <Switch
                     checked={form.timeout_enabled}
@@ -891,8 +891,8 @@ export default function InterceptPage() {
                       >
                         <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="deny">自动拒绝</SelectItem>
-                          <SelectItem value="allow">自动允许</SelectItem>
+                          <SelectItem value="deny">Auto-deny</SelectItem>
+                          <SelectItem value="allow">Auto-allow</SelectItem>
                         </SelectContent>
                       </Select>
                     </Field>
@@ -909,12 +909,12 @@ export default function InterceptPage() {
                 checked={form.enabled}
                 onCheckedChange={(v) => set({ enabled: v })}
               />
-              <Label htmlFor="rule-enabled" className="cursor-pointer">启用此规则</Label>
+              <Label htmlFor="rule-enabled" className="cursor-pointer">Enable this rule</Label>
             </div>
           </div>
 
           <SheetFooter className="border-t px-6 py-4 flex-row justify-end gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>取消</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button onClick={handleSave} disabled={saving || !!regexErr}>
               {saving ? "Saving…" : "Save"}
             </Button>
@@ -928,16 +928,16 @@ export default function InterceptPage() {
           <DialogHeader className="shrink-0 border-b px-6 py-4">
             <DialogTitle className="flex items-center gap-2">
               <ListFilterIcon className="h-4 w-4" />
-              拦截范围
+              Intercept scope
             </DialogTitle>
             <DialogDescription className="text-xs">
-              只有启用拦截的工具才会进入规则匹配；其余工具直接放行
+              Only tools with interception enabled go through rule matching; the rest pass through directly
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 space-y-5">
             {scopeLoading ? (
-              <p className="text-sm text-muted-foreground py-4">加载中…</p>
+              <p className="text-sm text-muted-foreground py-4">Loading…</p>
             ) : (
               toolGroups.map((group, gi) => (
                 <div key={group.label}>
@@ -973,7 +973,7 @@ export default function InterceptPage() {
           </div>
 
           <div className="shrink-0 border-t px-6 py-3 flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setScopeOpen(false)}>取消</Button>
+            <Button variant="outline" size="sm" onClick={() => setScopeOpen(false)}>Cancel</Button>
             <Button size="sm" onClick={saveScope} disabled={scopeSaving || scopeLoading}>
               {scopeSaving ? "Saving…" : "Save"}
             </Button>

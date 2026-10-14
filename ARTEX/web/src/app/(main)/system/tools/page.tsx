@@ -201,13 +201,13 @@ function ToolEditor({
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4">
         {trafficGated && (
           <div className="border-amber-500/40 bg-amber-500/10 text-muted-foreground rounded-md border px-3 py-2 text-xs">
-            该工具依赖<b>流量捕获</b>。请先在「系统配置」开启流量捕获，才能绑定给 Agent 并启用。
+            This tool depends on<b>Traffic capture</b>. Enable traffic capture under "System settings" first; only then can it be bound to an agent and enabled.
           </div>
         )}
         {/* binding + switch */}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <div className="grid gap-1.5">
-            <Label className="text-muted-foreground text-xs">绑定 Agent（决定该工具给哪些 Agent）</Label>
+            <Label className="text-muted-foreground text-xs">Bind agents (decides which agents get this tool)</Label>
             <div className="flex flex-wrap gap-3">
               {agents.map((ag) => (
                 <label key={ag.key} className="flex items-center gap-2 text-sm">
@@ -220,20 +220,20 @@ function ToolEditor({
                   <span className="text-muted-foreground font-mono text-xs">{ag.key}</span>
                 </label>
               ))}
-              {agents.length === 0 && <span className="text-muted-foreground text-xs">（无 Agent）</span>}
+              {agents.length === 0 && <span className="text-muted-foreground text-xs">(no agent)</span>}
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Switch checked={enabled} onCheckedChange={setEnabled} id={`en-${tool.key}`} />
             <Label htmlFor={`en-${tool.key}`} className="text-sm">
-              启用
+              Enable
             </Label>
           </div>
         </div>
 
         {/* description */}
         <div className="grid gap-1.5">
-          <Label className="text-muted-foreground text-xs">工具描述（发送给模型）</Label>
+          <Label className="text-muted-foreground text-xs">Tool description (sent to the model)</Label>
           <Textarea
             className="font-mono text-xs"
             rows={6}
@@ -245,9 +245,9 @@ function ToolEditor({
         {/* params */}
         <div className="grid gap-2">
           <Label className="text-muted-foreground text-xs">
-            参数（名称 / 类型 / 必填只读；描述与默认值可改）
+            Parameters (name / type / required are read-only; description and default are editable)
           </Label>
-          {rows.length === 0 && <span className="text-muted-foreground text-xs">（无参数）</span>}
+          {rows.length === 0 && <span className="text-muted-foreground text-xs">(no parameters)</span>}
           {rows.map((r, i) => (
             <div
               key={(r.parentKey ?? "") + "." + r.name}
@@ -264,16 +264,16 @@ function ToolEditor({
                 </Badge>
                 {r.required && (
                   <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
-                    必填
+                    Required
                   </Badge>
                 )}
                 {r.parentKey && (
-                  <span className="text-muted-foreground text-[10px]">items 子字段</span>
+                  <span className="text-muted-foreground text-[10px]">items subfields</span>
                 )}
               </div>
               <div className="grid gap-2">
                 <div className="grid gap-1">
-                  <Label className="text-muted-foreground text-[11px]">描述</Label>
+                  <Label className="text-muted-foreground text-[11px]">Description</Label>
                   <Input
                     className="text-xs"
                     value={r.description}
@@ -281,7 +281,7 @@ function ToolEditor({
                   />
                 </div>
                 <div className="grid gap-1">
-                  <Label className="text-muted-foreground text-[11px]">默认值</Label>
+                  <Label className="text-muted-foreground text-[11px]">Default</Label>
                   <Input
                     className="text-xs"
                     placeholder={r.scalar ? "(empty = no default)" : "Scalar fields only"}
@@ -299,10 +299,10 @@ function ToolEditor({
       <Separator className="mt-4" />
       <div className="flex flex-wrap gap-2 p-4">
         <Button size="sm" onClick={save} disabled={saving}>
-          <SaveIcon /> 保存
+          <SaveIcon /> Save
         </Button>
         <Button size="sm" variant="outline" onClick={reset}>
-          <RotateCcwIcon /> 恢复默认
+          <RotateCcwIcon /> Restore defaults
         </Button>
       </div>
     </div>
@@ -321,11 +321,11 @@ function ToolGridCard({ tool, onClick }: { tool: Tool; onClick: () => void }) {
         <span className="font-mono text-sm font-medium">{tool.key}</span>
         {tool.system ? (
           <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
-            系统
+            System
           </Badge>
         ) : (
           <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
-            自定义·{tool.kind}
+            Custom ·{tool.kind}
           </Badge>
         )}
         {tool.deferred && (
@@ -335,7 +335,7 @@ function ToolGridCard({ tool, onClick }: { tool: Tool; onClick: () => void }) {
         )}
         {!tool.enabled && (
           <Badge variant="outline" className="text-destructive px-1.5 py-0 text-[10px]">
-            已停用
+            Disabled
           </Badge>
         )}
         <Badge
@@ -343,7 +343,7 @@ function ToolGridCard({ tool, onClick }: { tool: Tool; onClick: () => void }) {
           className="ml-auto px-1.5 py-0 text-[10px] tabular-nums"
           title={`Called ${tool.calls ?? 0} time(s)`}
         >
-          调用 {tool.calls ?? 0}
+          Calls {tool.calls ?? 0}
         </Badge>
       </div>
       <p className="text-muted-foreground line-clamp-1 h-4 text-xs">
@@ -351,7 +351,7 @@ function ToolGridCard({ tool, onClick }: { tool: Tool; onClick: () => void }) {
       </p>
       <div className="mt-auto flex flex-wrap gap-1 pt-1">
         {tool.agents.length === 0 && (
-          <span className="text-muted-foreground text-[10px]">（未绑定 Agent）</span>
+          <span className="text-muted-foreground text-[10px]">(no agent bound)</span>
         )}
         {tool.agents.map((a) => (
           <Badge key={a} variant="outline" className="px-1.5 py-0 text-[10px]">
@@ -402,8 +402,8 @@ export default function ToolsPage() {
     <div className="flex flex-1 flex-col gap-4 md:gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">工具</h1>
-          <p className="text-muted-foreground text-sm">系统工具的描述/绑定，以及自定义工具(command/script/http)</p>
+          <h1 className="text-xl font-semibold tracking-tight">Tools</h1>
+          <p className="text-muted-foreground text-sm">System tools' descriptions and bindings, plus custom tools (command/script/http)</p>
         </div>
         <div className="relative w-64">
           <SearchIcon className="text-muted-foreground absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2" />
@@ -418,14 +418,14 @@ export default function ToolsPage() {
 
       <Tabs defaultValue="system">
         <TabsList>
-          <TabsTrigger value="system">系统工具</TabsTrigger>
-          <TabsTrigger value="custom">自定义工具</TabsTrigger>
+          <TabsTrigger value="system">System tools</TabsTrigger>
+          <TabsTrigger value="custom">Custom tools</TabsTrigger>
         </TabsList>
 
         <TabsContent value="system">
           <Card>
             <CardHeader>
-              <CardTitle>系统工具</CardTitle>
+              <CardTitle>System tools</CardTitle>
               <CardDescription>
                 {query.trim()
                   ? `${systemTools.length} / ${allSystemCount} match; click a card to edit its description, parameter defaults and agent bindings`
@@ -453,7 +453,7 @@ export default function ToolsPage() {
             <CardHeader>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <CardTitle>自定义工具</CardTitle>
+                  <CardTitle>Custom tools</CardTitle>
                   <CardDescription>
                     {query.trim()
                       ? `shell/command/script/http, ${customTools.length} / ${allCustomCount} match; click a card to edit`
@@ -461,7 +461,7 @@ export default function ToolsPage() {
                   </CardDescription>
                 </div>
                 <Button size="sm" onClick={() => setCustomEdit("new")}>
-                  <PlusIcon /> 新建自定义工具
+                  <PlusIcon /> New custom tool
                 </Button>
               </div>
             </CardHeader>
@@ -491,7 +491,7 @@ export default function ToolsPage() {
             <>
               <SheetHeader className="px-4">
                 <SheetTitle className="font-mono">{selected.key}</SheetTitle>
-                <SheetDescription>编辑描述、参数默认值与 Agent 绑定</SheetDescription>
+                <SheetDescription>Edit the description, parameter defaults and agent bindings</SheetDescription>
               </SheetHeader>
               <ToolEditor
                 key={selected.key}
@@ -679,7 +679,7 @@ function CustomToolDialog({
       >
         <SheetHeader className="px-4">
           <SheetTitle>{isNew ? "New custom tool" : `Edit ${tool?.key}`}</SheetTitle>
-          <SheetDescription>shell=bash 环境声明(只需名称+描述，告知模型可用 bash 调用)；command/script/http 需写执行规格。</SheetDescription>
+          <SheetDescription>shell = bash environment declaration (name + description only, telling the model it can call it from bash); command/script/http need an execution spec.</SheetDescription>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
@@ -689,36 +689,36 @@ function CustomToolDialog({
               onChange={(e) => setKey(e.target.value)} />
           </div>
           <div className="grid gap-1.5">
-            <Label className="text-xs">描述(发给模型)</Label>
+            <Label className="text-xs">Description (sent to the model)</Label>
             <Textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
 
           <div className="grid gap-1.5">
-            <Label className="text-xs">类型</Label>
+            <Label className="text-xs">Type</Label>
             <Select value={kind} onValueChange={(v) => setKind(v as "shell" | "command" | "script" | "http")}>
               <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="shell">shell（bash 环境声明）</SelectItem>
-                <SelectItem value="command">command（shell 命令模板）</SelectItem>
-                <SelectItem value="script">script（Python 脚本）</SelectItem>
-                <SelectItem value="http">http（API 请求）</SelectItem>
+                <SelectItem value="shell">shell (bash environment declaration)</SelectItem>
+                <SelectItem value="command">command (shell command template)</SelectItem>
+                <SelectItem value="script">script (Python script)</SelectItem>
+                <SelectItem value="http">http (API request)</SelectItem>
               </SelectContent>
             </Select>
             {kind === "shell" && (
-              <p className="text-muted-foreground text-xs">适合 nmap、sqlmap、ffuf 等出名工具——模型已知用法，只需声明"Callable from bash"即可。名称+描述会追加到 Bash 工具描述里。</p>
+              <p className="text-muted-foreground text-xs">Suits well-known tools such as nmap, sqlmap and ffuf — the model already knows how to use them, so just declare "Callable from bash". The name and description are appended to the Bash tool's description.</p>
             )}
           </div>
 
           {kind === "command" && (
             <div className="grid gap-1.5">
-              <Label className="text-xs">命令模板（占位符 {"{param}"}，如 nmap -p {"{ports}"} {"{target}"}）</Label>
+              <Label className="text-xs">Command template (placeholders {"{param}"}, such as nmap -p {"{ports}"} {"{target}"})</Label>
               <Textarea className="font-mono text-xs" rows={2} value={ex.command}
                 onChange={(e) => setEx({ ...ex, command: e.target.value })} />
             </div>
           )}
           {kind === "script" && (
             <div className="grid gap-1.5">
-              <Label className="text-xs">Python 正文（参数走 stdin JSON / os.environ["TOOL_X"]）</Label>
+              <Label className="text-xs">Python body (parameters via stdin JSON / os.environ["TOOL_X"])</Label>
               <Textarea className="font-mono text-xs" rows={10} value={ex.code}
                 placeholder={'import json,sys\nargs=json.load(sys.stdin)\nprint(...)'}
                 onChange={(e) => setEx({ ...ex, code: e.target.value })} />
@@ -732,27 +732,27 @@ function CustomToolDialog({
                   <Input className="w-24" value={ex.method} onChange={(e) => setEx({ ...ex, method: e.target.value })} />
                 </div>
                 <div className="grid flex-1 gap-1.5">
-                  <Label className="text-xs">URL（可含 {"{param}"}）</Label>
+                  <Label className="text-xs">URL (may contain {"{param}"})</Label>
                   <Input className="font-mono text-xs" value={ex.url} onChange={(e) => setEx({ ...ex, url: e.target.value })} />
                 </div>
               </div>
               <div className="grid gap-1.5">
-                <Label className="text-xs">Headers（JSON，可含 {"{param}"}）</Label>
+                <Label className="text-xs">Headers (JSON, may contain {"{param}"})</Label>
                 <Textarea className="font-mono text-xs" rows={2} value={ex.headers}
                   placeholder={'{"Authorization": "Bearer {token}"}'} onChange={(e) => setEx({ ...ex, headers: e.target.value })} />
               </div>
               <div className="grid gap-1.5">
-                <Label className="text-xs">Body（可含 {"{param}"}）</Label>
+                <Label className="text-xs">Body (may contain {"{param}"})</Label>
                 <Textarea className="font-mono text-xs" rows={2} value={ex.body} onChange={(e) => setEx({ ...ex, body: e.target.value })} />
               </div>
               <div className="flex items-center gap-4">
                 <div className="grid gap-1.5">
-                  <Label className="text-xs">代理 URL（空=直连）</Label>
+                  <Label className="text-xs">Proxy URL (empty = direct)</Label>
                   <Input className="font-mono text-xs w-56" value={ex.proxy} onChange={(e) => setEx({ ...ex, proxy: e.target.value })} />
                 </div>
                 <label className="mt-4 flex items-center gap-2 text-sm">
                   <Checkbox checked={ex.use_recording_proxy} onCheckedChange={(v) => setEx({ ...ex, use_recording_proxy: !!v })} />
-                  走记录代理
+                  goes through the recording proxy
                 </label>
               </div>
             </div>
@@ -761,7 +761,7 @@ function CustomToolDialog({
           {kind !== "shell" && (
             <div className="flex items-center gap-3">
               <div className="grid gap-1.5">
-                <Label className="text-xs">超时(ms，空=默认)</Label>
+                <Label className="text-xs">Timeout (ms, empty = default)</Label>
                 <Input type="number" className="w-32" value={ex.timeout_ms} onChange={(e) => setEx({ ...ex, timeout_ms: e.target.value })} />
               </div>
             </div>
@@ -770,7 +770,7 @@ function CustomToolDialog({
           {kind !== "shell" && (
             <div className="grid gap-1.5">
               <Label className="text-xs">
-                参数 JSON Schema{kind === "http" ? "(required for http tools; must contain properties)" : "(empty = wrap {args} automatically)"}
+                Parameter JSON Schema{kind === "http" ? "(required for http tools; must contain properties)" : "(empty = wrap {args} automatically)"}
               </Label>
               <Textarea className="font-mono text-xs" rows={4} value={schemaText}
                 placeholder={'{"type":"object","properties":{"target":{"type":"string"}},"required":["target"]}'}
@@ -779,7 +779,7 @@ function CustomToolDialog({
           )}
 
           <div className="grid gap-1.5">
-            <Label className="text-muted-foreground text-xs">绑定 Agent</Label>
+            <Label className="text-muted-foreground text-xs">Bind agent</Label>
             <div className="flex flex-wrap gap-3">
               {agents.map((a) => (
                 <label key={a.key} className="flex items-center gap-2 text-sm">
@@ -792,18 +792,18 @@ function CustomToolDialog({
 
           <div className="flex items-center gap-6">
             <label className="flex items-center gap-2 text-sm">
-              <Switch checked={enabled} onCheckedChange={setEnabled} /> 启用
+              <Switch checked={enabled} onCheckedChange={setEnabled} /> Enable
             </label>
             {kind !== "shell" && (
               <label className="flex items-center gap-2 text-sm">
-                <Switch checked={deferred} onCheckedChange={setDeferred} /> deferred（大量不常用工具才开）
+                <Switch checked={deferred} onCheckedChange={setDeferred} /> deferred (only for many rarely used tools)
               </label>
             )}
           </div>
 
           {kind !== "shell" && (
             <div className="grid gap-1.5 rounded-md border p-3">
-              <Label className="text-xs font-medium">测试运行（用当前表单，不会保存）</Label>
+              <Label className="text-xs font-medium">Test run (uses the current form, nothing saved)</Label>
               <Textarea className="font-mono text-xs" rows={2} value={paramsText}
                 placeholder={'Example parameters as JSON, such as {\"target\":\"example.com\"}'}
                 onChange={(e) => setParamsText(e.target.value)} />
@@ -833,7 +833,7 @@ function CustomToolDialog({
           </Button>
           {!isNew && (
             <Button size="sm" variant="outline" className="text-destructive" onClick={del}>
-              <Trash2Icon /> 删除
+              <Trash2Icon /> Delete
             </Button>
           )}
         </div>

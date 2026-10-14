@@ -193,10 +193,10 @@ export default function WorkspacePage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setMkdirOpen(true)}>
-            <FolderPlusIcon /> 新建文件夹
+            <FolderPlusIcon /> New folder
           </Button>
           <Button variant="outline" size="sm" onClick={() => uploadRef.current?.click()}>
-            <UploadIcon /> 上传
+            <UploadIcon /> Upload
           </Button>
           <Button variant="ghost" size="icon" className="size-8" onClick={() => load(path)} title="Refresh">
             <RefreshCwIcon className={cn("size-4", loading && "animate-spin")} />
@@ -216,10 +216,10 @@ export default function WorkspacePage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>名称</TableHead>
-                <TableHead className="w-28 text-right">大小</TableHead>
-                <TableHead className="w-40">修改时间</TableHead>
-                <TableHead className="w-24 text-right">操作</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead className="w-28 text-right">Size</TableHead>
+                <TableHead className="w-40">Modified</TableHead>
+                <TableHead className="w-24 text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -302,7 +302,7 @@ export default function WorkspacePage() {
                     {edit.file.too_large ? "The file is too large to preview or edit online." : "Binary file; online preview and editing are not supported."}
                   </p>
                   <Button variant="outline" onClick={() => api.workspaceDownload(edit.file.path)}>
-                    <DownloadIcon /> 下载文件
+                    <DownloadIcon /> Download file
                   </Button>
                 </div>
               ) : (
@@ -322,7 +322,7 @@ export default function WorkspacePage() {
                         variant="outline"
                         onClick={() => api.workspaceDownload(edit.file.path)}
                       >
-                        <DownloadIcon /> 下载
+                        <DownloadIcon /> Download
                       </Button>
                       <Button onClick={saveFile} disabled={!edit.dirty || edit.saving}>
                         <SaveIcon /> {edit.saving ? "Saving…" : "Save"}
@@ -340,7 +340,7 @@ export default function WorkspacePage() {
       <Dialog open={mkdirOpen} onOpenChange={setMkdirOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>新建文件夹</DialogTitle>
+            <DialogTitle>New folder</DialogTitle>
           </DialogHeader>
           <Input
             autoFocus
@@ -351,10 +351,10 @@ export default function WorkspacePage() {
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setMkdirOpen(false)}>
-              取消
+              Cancel
             </Button>
             <Button onClick={doMkdir} disabled={!mkdirName.trim()}>
-              创建
+              Create
             </Button>
           </DialogFooter>
         </DialogContent>

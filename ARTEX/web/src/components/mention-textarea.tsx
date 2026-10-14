@@ -238,7 +238,7 @@ export function MentionTextarea({ value, onValueChange, onKeyDown, className, in
                 ? "Select a reference type"
                 : `Search ${mentionKinds.find((kind) => kind.kind === search.kind)?.label ?? "all records"}`}
             </span>
-            <span>↑↓ 选择 · Enter 确认 · Esc 关闭</span>
+            <span>↑↓ select · Enter confirm · Esc close</span>
           </div>
           <div
             id={listId}
@@ -272,17 +272,17 @@ export function MentionTextarea({ value, onValueChange, onKeyDown, className, in
             {!categories.length && loading && (
               <div role="status" className="flex items-center gap-2 p-3 text-muted-foreground text-sm">
                 <Loader2Icon className="size-4 animate-spin" />
-                搜索中…
+                Searching…
               </div>
             )}
             {!categories.length && !loading && error && (
               <div role="alert" className="p-3 text-destructive text-sm">
-                搜索失败：{error}。请重新输入重试。
+                Search failed:{error}. Re-enter and retry.
               </div>
             )}
             {!categories.length && !loading && !error && !items.length && (
               <div role="status" className="p-3 text-muted-foreground text-sm">
-                没有匹配记录，请更换名称、地址或 ID
+                No matching records; try another name, address or ID
               </div>
             )}
             {items.map((item, index) => (
@@ -310,7 +310,7 @@ export function MentionTextarea({ value, onValueChange, onKeyDown, className, in
           </div>
           {!categories.length && (
             <p className="px-2 py-1 text-muted-foreground text-xs">
-              {loadingMore && <span role="status">正在加载更多…</span>}
+              {loadingMore && <span role="status">Loading more…</span>}
               {!loadingMore && nextCursor && (
                 <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={loadMore}>
                   {pageError ? "Load failed, click to retry" : `Showing ${items.length}, scroll down for more`}
@@ -345,7 +345,7 @@ export function MentionTextarea({ value, onValueChange, onKeyDown, className, in
               </button>
             </Badge>
           ))}
-          <span className="text-muted-foreground text-xs">发送时读取最新详情 · 最多 10 条</span>
+          <span className="text-muted-foreground text-xs">Reads the latest detail when sending · at most 10</span>
         </div>
       )}
     </div>

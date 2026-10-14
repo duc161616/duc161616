@@ -84,12 +84,12 @@ export function LinkTrafficDialog({
     >
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>关联到漏洞</DialogTitle>
-          <DialogDescription>将所选 {trafficIds.length} 条流量保存为已有漏洞的证据。</DialogDescription>
+          <DialogTitle>Linked to finding</DialogTitle>
+          <DialogDescription>Selected {trafficIds.length} traffic record(s) saved as evidence for an existing finding.</DialogDescription>
         </DialogHeader>
         <FieldGroup>
           <Field>
-            <FieldLabel htmlFor="link-finding-query">查找漏洞</FieldLabel>
+            <FieldLabel htmlFor="link-finding-query">Find a finding</FieldLabel>
             <Input
               id="link-finding-query"
               placeholder="Name / summary / vulnerability class"
@@ -132,10 +132,10 @@ export function LinkTrafficDialog({
         </div>
         <div className="flex items-center justify-between gap-2">
           <Button variant="outline" size="sm" disabled={loading || page <= 1} onClick={() => setPage((p) => p - 1)}>
-            上一页
+            Previous
           </Button>
           <span className="text-xs">
-            第 {page} 页 · 共 {data?.total ?? 0} 条
+             {page}  · total {data?.total ?? 0} 
           </span>
           <Button
             variant="outline"
@@ -143,7 +143,7 @@ export function LinkTrafficDialog({
             disabled={loading || page * 20 >= (data?.total ?? 0)}
             onClick={() => setPage((p) => p + 1)}
           >
-            下一页
+            Next
           </Button>
         </div>
         <p className="text-sm">
@@ -151,7 +151,7 @@ export function LinkTrafficDialog({
         </p>
         <DialogFooter>
           <Button variant="outline" disabled={busy} onClick={onClose}>
-            取消
+            Cancel
           </Button>
           <Button disabled={busy || !selected} onClick={() => void save()}>
             {busy ? "Saving…" : "Confirm link"}

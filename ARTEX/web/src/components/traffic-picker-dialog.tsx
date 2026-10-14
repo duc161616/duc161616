@@ -112,14 +112,14 @@ export function TrafficPickerDialog({
       >
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-5xl">
           <DialogHeader>
-            <DialogTitle>绑定流量</DialogTitle>
+            <DialogTitle>Bind traffic</DialogTitle>
             <DialogDescription>
-              筛选并多选请求/响应，已选记录会跨页保留。绑定后可设置用途、说明和顺序。
+              Filter and multi-select requests/responses; selections persist across pages. After binding you can set the purpose, note and order.
             </DialogDescription>
           </DialogHeader>
           <FieldGroup className="flex flex-col gap-3 sm:flex-row">
             <Field>
-              <FieldLabel htmlFor="evidence-host">目标 host</FieldLabel>
+              <FieldLabel htmlFor="evidence-host">Target host</FieldLabel>
               <Input
                 id="evidence-host"
                 value={host}
@@ -131,7 +131,7 @@ export function TrafficPickerDialog({
               />
             </Field>
             <Field>
-              <FieldLabel htmlFor="evidence-method">请求方法</FieldLabel>
+              <FieldLabel htmlFor="evidence-method">Request method</FieldLabel>
               <Select
                 value={method}
                 onValueChange={(v) => {
@@ -144,7 +144,7 @@ export function TrafficPickerDialog({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectItem value="all">全部方法</SelectItem>
+                    <SelectItem value="all">All methods</SelectItem>
                     {METHODS.map((m) => (
                       <SelectItem key={m} value={m}>
                         {m}
@@ -155,7 +155,7 @@ export function TrafficPickerDialog({
               </Select>
             </Field>
             <Field>
-              <FieldLabel htmlFor="evidence-query">关键词</FieldLabel>
+              <FieldLabel htmlFor="evidence-query">Keyword</FieldLabel>
               <Input
                 id="evidence-query"
                 value={query}
@@ -193,10 +193,10 @@ export function TrafficPickerDialog({
                       }
                     />
                   </TableHead>
-                  <TableHead>方法 / URL</TableHead>
-                  <TableHead>时间</TableHead>
-                  <TableHead>状态码</TableHead>
-                  <TableHead>操作</TableHead>
+                  <TableHead>Method / URL</TableHead>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Status code</TableHead>
+                  <TableHead>Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -214,7 +214,7 @@ export function TrafficPickerDialog({
                       <span className="font-mono text-xs">
                         {e.method} {e.url}
                       </span>
-                      {alreadyBound.has(e.id) ? <Badge variant="secondary">已绑定</Badge> : null}
+                      {alreadyBound.has(e.id) ? <Badge variant="secondary">Bound</Badge> : null}
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-xs">
                       {new Date(e.ts).toLocaleString("zh-CN")}
@@ -222,7 +222,7 @@ export function TrafficPickerDialog({
                     <TableCell>{e.status}</TableCell>
                     <TableCell>
                       <Button variant="ghost" size="sm" onClick={() => setPreview(e.id)}>
-                        预览
+                        Preview
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -239,7 +239,7 @@ export function TrafficPickerDialog({
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-sm">
-              已选 {selected.size} 条 · 共 {data?.total ?? 0} 条
+              Selected {selected.size}  · total {data?.total ?? 0} 
             </span>
             <div className="flex items-center gap-2">
               <Button
@@ -248,22 +248,22 @@ export function TrafficPickerDialog({
                 disabled={loading || page === 0}
                 onClick={() => setPage((p) => p - 1)}
               >
-                上一页
+                Previous
               </Button>
-              <span className="text-xs">第 {page + 1} 页</span>
+              <span className="text-xs"> {page + 1} </span>
               <Button
                 variant="outline"
                 size="sm"
                 disabled={loading || (page + 1) * 25 >= (data?.total ?? 0)}
                 onClick={() => setPage((p) => p + 1)}
               >
-                下一页
+                Next
               </Button>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" disabled={busy} onClick={onClose}>
-              取消
+              Cancel
             </Button>
             <Button disabled={busy || selected.size === 0} onClick={() => void save()}>
               {busy ? "Saving…" : `Bind ${selected.size} traffic record(s)`}

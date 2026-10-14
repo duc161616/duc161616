@@ -56,8 +56,8 @@ export function AssetInterceptRulesEditor({
               value={r.action}
               onChange={(e) => update(i, { action: e.target.value as "block" | "allow" })}
             >
-              <NativeSelectOption value="block">拦截</NativeSelectOption>
-              <NativeSelectOption value="allow">允许</NativeSelectOption>
+              <NativeSelectOption value="block">Intercept</NativeSelectOption>
+              <NativeSelectOption value="allow">Allow</NativeSelectOption>
             </NativeSelect>
             <NativeSelect
               size="sm"
@@ -96,7 +96,7 @@ export function AssetInterceptRulesEditor({
         );
       })}
       <Button type="button" size="sm" variant="outline" className="w-fit" onClick={add}>
-        <PlusIcon className="size-4" /> 添加一条
+        <PlusIcon className="size-4" /> Add one
       </Button>
     </div>
   );

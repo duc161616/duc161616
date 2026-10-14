@@ -232,33 +232,33 @@ export default function MCPPage() {
     return (
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
-          <Label>传输方式</Label>
+          <Label>Transport</Label>
           <div className="flex gap-2">
             <Button
               type="button"
               variant={form.transport === "stdio" ? "default" : "outline"}
               onClick={() => setF({ transport: "stdio" })}
             >
-              stdio（本地）
+              stdio (local)
             </Button>
             <Button
               type="button"
               variant={form.transport === "http" ? "default" : "outline"}
               onClick={() => setF({ transport: "http" })}
             >
-              http（远程）
+              http (remote)
             </Button>
             <Button
               type="button"
               variant={form.transport === "sse" ? "default" : "outline"}
               onClick={() => setF({ transport: "sse" })}
             >
-              sse（旧版）
+              sse (legacy)
             </Button>
           </div>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="m-name">名称</Label>
+          <Label htmlFor="m-name">Name</Label>
           <Input
             id="m-name"
             placeholder="filesystem"
@@ -279,7 +279,7 @@ export default function MCPPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="m-args">参数（空格分隔）</Label>
+              <Label htmlFor="m-args">Arguments (space separated)</Label>
               <Input
                 id="m-args"
                 className="font-mono"
@@ -291,7 +291,7 @@ export default function MCPPage() {
           </>
         ) : (
           <div className="grid gap-2">
-            <Label htmlFor="m-url">远程 URL</Label>
+            <Label htmlFor="m-url">Remote URL</Label>
             <Input
               id="m-url"
               className="font-mono"
@@ -304,7 +304,7 @@ export default function MCPPage() {
                 checked={form.insecure}
                 onCheckedChange={(v) => setF({ insecure: v === true })}
               />
-              跳过 TLS 证书校验（自签证书）
+              Skip TLS certificate verification (self-signed certificate)
             </label>
           </div>
         )}
@@ -332,15 +332,15 @@ export default function MCPPage() {
     return (
       <div className="flex flex-col gap-3 py-4">
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground text-sm">{tools.length} 个工具</span>
+          <span className="text-muted-foreground text-sm">{tools.length}  tool(s)</span>
           <Button size="sm" variant="outline" disabled={refreshing} onClick={refreshTools}>
-            <RefreshCwIcon className={refreshing ? "animate-spin" : ""} /> 刷新
+            <RefreshCwIcon className={refreshing ? "animate-spin" : ""} /> Refresh
           </Button>
         </div>
         {toolsLoading ? (
-          <p className="text-muted-foreground text-sm">加载中…</p>
+          <p className="text-muted-foreground text-sm">Loading…</p>
         ) : tools.length === 0 ? (
-          <p className="text-muted-foreground text-sm">尚未发现工具，点击刷新重新获取。</p>
+          <p className="text-muted-foreground text-sm">No tools discovered yet; click refresh to fetch them again.</p>
         ) : (
           <div className="flex flex-col divide-y">
             {tools.map((t) => (
@@ -363,7 +363,7 @@ export default function MCPPage() {
     <div className="flex flex-1 flex-col gap-4 md:gap-6">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">MCP</h1>
-        <p className="text-muted-foreground text-sm">外部 MCP 工具服务器 · 按 Agent 授权可见</p>
+        <p className="text-muted-foreground text-sm">External MCP tool servers · visibility granted per agent</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -373,7 +373,7 @@ export default function MCPPage() {
           className="text-foreground/70 border-foreground/70 hover:bg-muted/60 hover:shadow-sm flex min-h-[116px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed transition"
         >
           <PlusIcon className="size-6" />
-          <span className="text-sm">添加 MCP</span>
+          <span className="text-sm">Add MCP</span>
         </button>
 
         {servers.map((s) => (
@@ -411,7 +411,7 @@ export default function MCPPage() {
                 {s.tools && s.tools.length > 0 ? `${s.tools.length} tool(s)` : "No tools discovered yet"}
               </p>
               <div className="grid gap-2" onClick={(e) => e.stopPropagation()}>
-                <span className="text-muted-foreground text-xs">可见性（按 Agent 授权）</span>
+                <span className="text-muted-foreground text-xs">Visibility (granted per agent)</span>
                 <div className="flex flex-wrap gap-x-4 gap-y-2">
                   {agents.map((a) => (
                     <label key={a.key} className="flex items-center gap-2 text-sm">
@@ -437,7 +437,7 @@ export default function MCPPage() {
           <SheetHeader>
             <SheetTitle>{editing ? editing.name : "Add MCP server"}</SheetTitle>
             <SheetDescription>
-              stdio（本地起进程）或 http（远程 Streamable HTTP）
+              stdio (spawn a local process) or http (remote Streamable HTTP)
             </SheetDescription>
           </SheetHeader>
 
@@ -448,16 +448,16 @@ export default function MCPPage() {
               className="flex min-h-0 flex-1 flex-col px-4"
             >
               <TabsList>
-                <TabsTrigger value="config">配置</TabsTrigger>
+                <TabsTrigger value="config">Profile</TabsTrigger>
                 <TabsTrigger value="tools">
-                  工具列表{tools.length ? `（${tools.length}）` : ""}
+                  Tool list{tools.length ? ` (${tools.length})` : ""}
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="config" className="min-h-0 flex-1 overflow-y-auto">
                 {renderForm()}
                 <div className="flex gap-2 pt-2 pb-6">
                   <Button onClick={saveForm} disabled={saving}>
-                    保存
+                    Save
                   </Button>
                 </div>
               </TabsContent>
@@ -470,7 +470,7 @@ export default function MCPPage() {
               {renderForm()}
               <div className="pt-2 pb-6">
                 <Button onClick={saveForm} disabled={saving}>
-                  <PlusIcon /> 添加
+                  <PlusIcon /> Add
                 </Button>
               </div>
             </div>

@@ -142,8 +142,8 @@ export default function LogsPage() {
   return (
     <div className="flex flex-1 flex-col gap-3">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">系统日志</h1>
-        <p className="text-muted-foreground text-sm">后端实时日志流(planner / worker / 数据库 / 流量 …)</p>
+        <h1 className="text-xl font-semibold tracking-tight">System logs</h1>
+        <p className="text-muted-foreground text-sm">Live backend log stream (planner / worker / database / traffic …)</p>
       </div>
       <div className="flex flex-1 flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -175,12 +175,12 @@ export default function LogsPage() {
             {paused ? "Paused" : "Pause"}
           </Button>
           <Button size="sm" variant="outline" className="h-8" onClick={() => setLines([])}>
-            清空
+            Clear
           </Button>
           <span className="ml-auto text-xs text-muted-foreground">
-            {counts.total} 行 ·{" "}
-            <span className="text-amber-600 dark:text-amber-400">{counts.warn} 警告</span> ·{" "}
-            <span className="text-red-600 dark:text-red-400">{counts.error} 错误</span>
+            {counts.total}  lines ·{" "}
+            <span className="text-amber-600 dark:text-amber-400">{counts.warn} Warning</span> ·{" "}
+            <span className="text-red-600 dark:text-red-400">{counts.error} Error</span>
           </span>
         </div>
 
@@ -205,7 +205,7 @@ export default function LogsPage() {
             </div>
           )}
           {filtered.length === 0 ? (
-            <p className="py-10 text-center text-muted-foreground">暂无日志。</p>
+            <p className="py-10 text-center text-muted-foreground">No logs.</p>
           ) : (
             filtered.map((l) => {
               const body =

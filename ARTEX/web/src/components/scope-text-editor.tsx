@@ -52,7 +52,7 @@ export function ScopeTextEditor({
       />
       {parsed.rules.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 text-muted-foreground text-xs">
-          <span>已识别 {parsed.rules.length} 条</span>
+          <span>Recognized {parsed.rules.length} </span>
           {Object.entries(SCOPE_KIND_LABELS).map(([kind, kindLabel]) => {
             const count = counts.get(kind as CompanyScopeKind) ?? 0;
             return count > 0 ? (
@@ -67,10 +67,10 @@ export function ScopeTextEditor({
         <FieldError>
           {parsed.errors.slice(0, 5).map((item) => (
             <span key={`${item.line}-${item.error}`} className="block">
-              第 {item.line} 行：{item.error}
+               {item.line} : {item.error}
             </span>
           ))}
-          {parsed.errors.length > 5 && <span className="block">另有 {parsed.errors.length - 5} 行错误</span>}
+          {parsed.errors.length > 5 && <span className="block">Plus {parsed.errors.length - 5}  line error(s)</span>}
         </FieldError>
       )}
     </Field>

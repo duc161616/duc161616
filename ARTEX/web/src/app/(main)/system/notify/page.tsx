@@ -267,16 +267,16 @@ export default function NotifyPage() {
     <div className="flex flex-1 flex-col gap-4 md:gap-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">通知推送</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Notifications</h1>
           <p className="text-muted-foreground text-sm">
-            发现漏洞时推送到钉钉 / 飞书 / 企业微信等渠道 · 每个渠道可独立设推送时机与过滤规则
+            Notify DingTalk / Feishu / WeCom and other channels when vulnerabilities are found · each channel sets its own timing and filter rules
           </p>
         </div>
         {meta && (
           // 用 div 而不是 label：Switch 自带 aria-label，外面再套一层 label
           // 既关联不到任何原生控件，又会让点击文字看起来应该能切换。
           <div className="flex shrink-0 items-center gap-2 text-sm">
-            <span className="text-muted-foreground">总开关</span>
+            <span className="text-muted-foreground">Master switch</span>
             <Switch
               checked={meta.enabled}
               disabled={globalSaving}
@@ -305,21 +305,21 @@ export default function NotifyPage() {
 
       <Card className="gap-3">
         <CardHeader>
-          <CardTitle className="text-base">全局设置</CardTitle>
+          <CardTitle className="text-base">Global settings</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-2">
-            <Label htmlFor="n-base">回链地址</Label>
+            <Label htmlFor="n-base">Callback URL</Label>
             <Input
               id="n-base"
               placeholder="https://artex.example.com"
               value={baseURL}
               onChange={(e) => setBaseURL(e.target.value)}
             />
-            <p className="text-muted-foreground text-xs">消息里「查看详情」按钮指向的地址。留空则不带按钮。</p>
+            <p className="text-muted-foreground text-xs">The URL the "View details" button in the message points to. Empty means no button.</p>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="n-digest">汇总周期（分钟）</Label>
+            <Label htmlFor="n-digest">Digest period (minutes)</Label>
             <Input
               id="n-digest"
               type="number"
@@ -329,11 +329,11 @@ export default function NotifyPage() {
               value={digestMin}
               onChange={(e) => setDigestMin(e.target.value)}
             />
-            <p className="text-muted-foreground text-xs">仅对「汇总」模式的渠道生效。</p>
+            <p className="text-muted-foreground text-xs">Applies only to channels in "digest" mode.</p>
           </div>
           <div className="sm:col-span-2">
             <Button onClick={saveGlobal} disabled={globalSaving}>
-              保存全局设置
+              Save global settings
             </Button>
           </div>
         </CardContent>
@@ -341,8 +341,8 @@ export default function NotifyPage() {
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as "channels" | "deliveries")} className="flex flex-col gap-4">
         <TabsList>
-          <TabsTrigger value="channels">渠道</TabsTrigger>
-          <TabsTrigger value="deliveries">投递记录</TabsTrigger>
+          <TabsTrigger value="channels">Channel</TabsTrigger>
+          <TabsTrigger value="deliveries">Delivery records</TabsTrigger>
         </TabsList>
 
         <TabsContent value="channels">
@@ -353,7 +353,7 @@ export default function NotifyPage() {
               className="text-foreground/70 border-foreground/70 hover:bg-muted/60 hover:shadow-sm flex min-h-[130px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed transition"
             >
               <PlusIcon className="size-6" />
-              <span className="text-sm">添加渠道</span>
+              <span className="text-sm">Add channel</span>
             </button>
 
             {channels.map((ch) => (
@@ -397,7 +397,7 @@ export default function NotifyPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="outline">{KIND_LABEL[ch.kind] ?? ch.kind}</Badge>
                     <Badge variant="outline">{ch.mode === "digest" ? "Digest" : "Live"}</Badge>
-                    {!ch.enabled && <Badge variant="outline">已停用</Badge>}
+                    {!ch.enabled && <Badge variant="outline">Disabled</Badge>}
                   </div>
                   <FilterSummary filter={ch.filter} />
                 </CardContent>
@@ -424,7 +424,7 @@ export default function NotifyPage() {
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4">
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label>渠道类型</Label>
+                <Label>Channel type</Label>
                 <Select
                   value={form.kind}
                   onValueChange={(v) => {
@@ -446,13 +446,13 @@ export default function NotifyPage() {
                 </Select>
                 {editing && (
                   <p className="text-muted-foreground text-xs">
-                    渠道类型不可修改——改了类型等于换一套凭据，请新建渠道。
+                    The channel type cannot be changed — changing it means a different set of credentials, so create a new channel.
                   </p>
                 )}
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="n-name">渠道名称</Label>
+                <Label htmlFor="n-name">Channel name</Label>
                 <Input
                   id="n-name"
                   placeholder="Incident response group / daily broadcast group"
@@ -463,7 +463,7 @@ export default function NotifyPage() {
 
               {fields.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
-                  该渠道的表单尚未定义（前端缺 CHANNEL_FIELDS 条目），请补全后再试。
+                  This channel's form is not defined yet (the frontend is missing a CHANNEL_FIELDS entry); complete it and retry.
                 </p>
               ) : (
                 fields.map((d) => (
@@ -478,23 +478,23 @@ export default function NotifyPage() {
               )}
 
               <div className="grid gap-2">
-                <Label>推送时机</Label>
+                <Label>Notify when</Label>
                 <Select value={form.mode} onValueChange={(v) => setF({ mode: v as "realtime" | "digest" })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="realtime">实时 · 每条漏洞单独发一条</SelectItem>
-                    <SelectItem value="digest">汇总 · 按周期合并成一条</SelectItem>
+                    <SelectItem value="realtime">Live · one message per finding</SelectItem>
+                    <SelectItem value="digest">Digest · merged into one per period</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-muted-foreground text-xs">
-                  想做「高危实时、其余汇总」就建两个渠道：一个实时 + 门槛高危，一个汇总 + 不限级别。
+                  For "high severity live, the rest digested", create two channels: one live with a high threshold, one digest with no level limit.
                 </p>
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="n-rate">限流（条/分钟）</Label>
+                <Label htmlFor="n-rate">Rate limit (per minute)</Label>
                 <Input
                   id="n-rate"
                   type="number"
@@ -504,15 +504,15 @@ export default function NotifyPage() {
                   onChange={(e) => setF({ ratePerMin: e.target.value })}
                 />
                 <p className="text-muted-foreground text-xs">
-                  留空用渠道默认值；0 表示不限流。超限不会丢消息，只会推迟发送。
+                  Empty uses the channel default; 0 means unthrottled. Exceeding the limit does not drop messages, it only delays them.
                 </p>
               </div>
 
               <div className="border-t pt-4">
-                <p className="mb-3 text-sm font-medium">过滤规则（留空即不过滤）</p>
+                <p className="mb-3 text-sm font-medium">Filter rule (empty = no filter)</p>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label>最低级别</Label>
+                    <Label>Minimum level</Label>
                     <Select
                       value={form.minSeverity || "all"}
                       onValueChange={(v) => setF({ minSeverity: v === "all" ? "" : v })}
@@ -530,7 +530,7 @@ export default function NotifyPage() {
                     </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="n-inc">只推这些漏洞类型</Label>
+                    <Label htmlFor="n-inc">Only notify these vulnerability types</Label>
                     <Textarea
                       id="n-inc"
                       placeholder={"SQL injection\nCommand execution"}
@@ -538,21 +538,21 @@ export default function NotifyPage() {
                       onChange={(e) => setF({ includeText: e.target.value })}
                     />
                     <p className="text-muted-foreground text-xs">
-                      每行一个关键词，大小写不敏感的子串匹配。留空=全部类型。
+                      One keyword per line, case-insensitive substring match. Empty = every type.
                     </p>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="n-exc">排除这些漏洞类型</Label>
+                    <Label htmlFor="n-exc">Exclude these vulnerability types</Label>
                     <Textarea
                       id="n-exc"
                       placeholder={"Information disclosure"}
                       value={form.excludeText}
                       onChange={(e) => setF({ excludeText: e.target.value })}
                     />
-                    <p className="text-muted-foreground text-xs">排除优先于包含：同时命中时会被排除。</p>
+                    <p className="text-muted-foreground text-xs">Exclude beats include: when both match, it is excluded.</p>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="n-tasks">限定任务 ID</Label>
+                    <Label htmlFor="n-tasks">Limit to task ID</Label>
                     <Input
                       id="n-tasks"
                       placeholder="1, 2, 3"
@@ -561,14 +561,14 @@ export default function NotifyPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="n-assets">限定资产 ID</Label>
+                    <Label htmlFor="n-assets">Limit to asset ID</Label>
                     <Input
                       id="n-assets"
                       placeholder="10, 11"
                       value={form.assetIDsText}
                       onChange={(e) => setF({ assetIDsText: e.target.value })}
                     />
-                    <p className="text-muted-foreground text-xs">任务/资产留空=不限；填写后要求与漏洞有交集。</p>
+                    <p className="text-muted-foreground text-xs">Empty task/asset = no limit; once filled, they must intersect with the finding.</p>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Switch
@@ -576,14 +576,14 @@ export default function NotifyPage() {
                       onCheckedChange={(v) => setF({ onStatusChange: v })}
                       aria-label="Receive state changes"
                     />
-                    漏洞处置状态变更时也推送（仅实时模式）
+                    Also notify when a finding's disposition changes (live mode only)
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 text-sm">
                 <Switch checked={form.enabled} onCheckedChange={(v) => setF({ enabled: v })} aria-label="Enable" />
-                启用该渠道
+                Enable this channel
               </div>
             </div>
 
@@ -593,7 +593,7 @@ export default function NotifyPage() {
               </Button>
               {editing && (
                 <Button variant="outline" onClick={testChannel} disabled={testing}>
-                  <SendIcon /> 发送测试消息
+                  <SendIcon /> Send a test message
                 </Button>
               )}
             </div>

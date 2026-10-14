@@ -87,13 +87,13 @@ export default function SetupPage() {
             <div className="flex flex-col gap-4">
               {error && <p className="text-center text-sm text-destructive">{error}</p>}
               <Button type="button" className="w-full" onClick={() => window.location.reload()}>
-                重试
+                Retry
               </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="password">新密码</Label>
+                <Label htmlFor="password">New password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -105,7 +105,7 @@ export default function SetupPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="confirm">确认密码</Label>
+                <Label htmlFor="confirm">Confirm password</Label>
                 <Input
                   id="confirm"
                   type="password"

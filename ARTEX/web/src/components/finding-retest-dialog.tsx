@@ -55,16 +55,15 @@ export function FindingRetestDialog({ findingId, findingName, onClose, onStarted
     <Dialog open onOpenChange={(open) => !open && !submitLock.current && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>复测漏洞 #{findingId}</DialogTitle>
+          <DialogTitle>Retest finding #{findingId}</DialogTitle>
           <DialogDescription className="break-words">
             {findingName ? <span className="mb-2 block">{findingName}</span> : null}
-            复测 Agent
-            将读取原证据和测试约束，在独立会话中执行针对性验证。复测成功完成且确认修复后，漏洞状态自动改为「已修复」，其他结论保留原状态。
+            The retest agent reads the original evidence and test constraints and runs a targeted verification in an isolated session. When a retest completes successfully and confirms the fix, the finding's state changes to "fixed" automatically; other verdicts keep the original state.
           </DialogDescription>
         </DialogHeader>
         <FieldGroup>
           <Field data-disabled={submitting}>
-            <FieldLabel htmlFor={notesId}>补充说明（可选）</FieldLabel>
+            <FieldLabel htmlFor={notesId}>Additional note (optional)</FieldLabel>
             <Textarea
               id={notesId}
               value={notes}
@@ -74,12 +73,12 @@ export function FindingRetestDialog({ findingId, findingName, onClose, onStarted
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. verify the original interface with the original test account; the fixed version is v2."
             />
-            <FieldDescription>可补充修复版本、测试条件或本次限制。</FieldDescription>
+            <FieldDescription>You may add the fixed version, test conditions or limits for this round.</FieldDescription>
           </Field>
         </FieldGroup>
         <DialogFooter>
           <Button variant="outline" disabled={submitting} onClick={onClose}>
-            取消
+            Cancel
           </Button>
           <Button disabled={submitting} onClick={() => void start()}>
             {submitting ? <Spinner data-icon="inline-start" /> : <RotateCcwIcon data-icon="inline-start" />}

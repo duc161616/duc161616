@@ -189,13 +189,13 @@ export function UpdateCard() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <DownloadIcon className="size-4" />
-          版本与更新
+          Version and updates
         </CardTitle>
-        <CardDescription>从 GitHub 检查并安装新版本。更新会重启程序，正在运行的任务会被中断。</CardDescription>
+        <CardDescription>Check for and install new versions from GitHub. Updating restarts the program, and running tasks are interrupted.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="text-muted-foreground">当前版本</span>
+          <span className="text-muted-foreground">Current version</span>
           <Badge variant="secondary" className="font-mono">
             {info?.current ?? "…"}
           </Badge>
@@ -209,7 +209,7 @@ export function UpdateCard() {
           )}
           {info?.latest && (
             <>
-              <span className="text-muted-foreground">最新版本</span>
+              <span className="text-muted-foreground">Latest version</span>
               <Badge variant={info.has_update ? "default" : "secondary"} className="font-mono">
                 {info.latest}
               </Badge>
@@ -222,7 +222,7 @@ export function UpdateCard() {
               rel="noreferrer"
               className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-4 hover:underline"
             >
-              更新日志 <ExternalLinkIcon className="size-3" />
+              Changelog <ExternalLinkIcon className="size-3" />
             </a>
           )}
         </div>
@@ -237,8 +237,8 @@ export function UpdateCard() {
         {info?.error && (
           <p className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
             <TriangleAlertIcon className="mt-0.5 size-3.5 shrink-0" />
-            无法连接 GitHub：{info.error}
-            {"　"}可在上方配置全局代理后重试。
+            Cannot reach GitHub:{info.error}
+            {"　"}You can retry after configuring a global proxy above.
           </p>
         )}
 
@@ -247,30 +247,30 @@ export function UpdateCard() {
         {info?.has_update && info.asset_available === false && (
           <p className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
             <TriangleAlertIcon className="mt-0.5 size-3.5 shrink-0" />
-            {info.latest} 没有提供 {info.os}/{info.arch} 的发布包（缺少 {info.asset}），无法自动更新。
+            {info.latest} Not provided {info.os}/{info.arch} release package (missing {info.asset}), so it cannot update automatically.
           </p>
         )}
 
         {info?.has_update && info.asset_available !== false && (
           <p className="text-xs text-muted-foreground">
-            将下载 <span className="font-mono">{info.asset}</span>
-            {info.size ? `（${humanSize(info.size)}）` : ""}，校验 SHA256 并冒烟测试后才会替换，失败自动保留当前版本。
+            Will download <span className="font-mono">{info.asset}</span>
+            {info.size ? ` (${humanSize(info.size)})` : ""}; it replaces the current version only after verifying SHA256 and passing a smoke test, and keeps the current version on failure.
           </p>
         )}
 
         {info && !info.has_update && info.comparable && !info.error && (
           <p className="flex items-center gap-2 text-xs text-muted-foreground">
             <CheckCircle2Icon className="size-3.5 text-emerald-600" />
-            当前已是最新版本。
+            Already on the latest version.
           </p>
         )}
 
         {info?.mode === "docker" && info.has_update && (
           <p className="text-xs text-muted-foreground">
-            Docker 下的更新只替换程序本身，不更新镜像里的 playwright / nmap 等工具链，且
+            An update under Docker replaces only the program itself, not the toolchains in the image such as playwright and nmap, and
             <span className="font-mono"> docker compose up -d </span>
-            重建容器后会退回镜像自带的版本。需要连镜像一起升级请执行
-            <span className="font-mono"> docker compose pull artex &amp;&amp; docker compose up -d artex</span>。
+            Rebuilding the container reverts to the version bundled in the image. To upgrade the image too, run
+            <span className="font-mono"> docker compose pull artex &amp;&amp; docker compose up -d artex</span>.
           </p>
         )}
 
@@ -286,7 +286,7 @@ export function UpdateCard() {
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => check(false)} disabled={checking || busy || restarting}>
             <RefreshCwIcon className={checking ? "size-4 animate-spin" : "size-4"} />
-            检查更新
+            Check for updates
           </Button>
           <Button
             size="sm"
@@ -299,14 +299,14 @@ export function UpdateCard() {
           {info?.has_backup && (
             <Button variant="ghost" size="sm" onClick={doRollback} disabled={busy || restarting}>
               <RotateCcwIcon className="size-4" />
-              回滚到上一版本
+              Roll back to the previous version
             </Button>
           )}
         </div>
 
         <p className="text-xs text-muted-foreground">
-          一键更新依赖守护脚本重启程序。请通过 <span className="font-mono">start.sh</span>（Windows 为
-          <span className="font-mono"> start.bat</span>）启动 ARTEX；直接运行 artex 本体时，程序退出后不会被自动拉起。
+          One-click update relies on the supervisor script to restart the program. Start ARTEX via <span className="font-mono">start.sh</span>(on Windows,
+          <span className="font-mono"> start.bat</span>) to start ARTEX; when you run the artex binary directly, it is not relaunched after the program exits.
         </p>
       </CardContent>
     </Card>

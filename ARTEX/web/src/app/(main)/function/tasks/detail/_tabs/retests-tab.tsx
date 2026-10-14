@@ -73,9 +73,9 @@ export function RetestsTab({ taskId }: { taskId: string }) {
       {error ? (
         <Alert variant="destructive">
           <AlertDescription>
-            加载任务漏洞失败：{error}
+            Failed to load task findings:{error}
             <Button variant="outline" size="sm" onClick={refresh}>
-              重试
+              Retry
             </Button>
           </AlertDescription>
         </Alert>
@@ -83,8 +83,8 @@ export function RetestsTab({ taskId }: { taskId: string }) {
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(16rem,22rem)_minmax(0,1fr)]">
         <Card className="min-w-0">
           <CardHeader>
-            <CardTitle>选择漏洞{data ? ` · ${data.total}` : ""}</CardTitle>
-            <CardDescription>查看本任务漏洞的复测记录，或发起新的复测。</CardDescription>
+            <CardTitle>Select finding{data ? ` · ${data.total}` : ""}</CardTitle>
+            <CardDescription>View this task's retest records, or start a new retest.</CardDescription>
           </CardHeader>
           <CardContent className="flex max-h-[32rem] flex-col overflow-y-auto">
             {!loaded && !error ? <Skeleton className="h-24 w-full" /> : null}
@@ -109,8 +109,8 @@ export function RetestsTab({ taskId }: { taskId: string }) {
             {loaded && findings.length === 0 ? (
               <Empty>
                 <EmptyHeader>
-                  <EmptyTitle>暂无可复测漏洞</EmptyTitle>
-                  <EmptyDescription>本任务发现漏洞后，可在这里手动发起复测。</EmptyDescription>
+                  <EmptyTitle>No findings available to retest</EmptyTitle>
+                  <EmptyDescription>Once this task finds vulnerabilities, you can start a retest here by hand.</EmptyDescription>
                 </EmptyHeader>
               </Empty>
             ) : null}
@@ -127,7 +127,7 @@ export function RetestsTab({ taskId }: { taskId: string }) {
                 <ChevronLeftIcon />
               </Button>
               <span className="text-muted-foreground text-xs">
-                第 {page} / {Math.ceil(data.total / PAGE_SIZE)} 页
+                 {page} / {Math.ceil(data.total / PAGE_SIZE)} 
               </span>
               <Button
                 variant="outline"
@@ -148,7 +148,7 @@ export function RetestsTab({ taskId }: { taskId: string }) {
                 <h2 className="min-w-0 flex-1 break-words font-medium">{findingLabel(selected)}</h2>
                 <Button asChild variant="ghost" size="sm">
                   <Link href={`/function/findings/detail?id=${selected.finding_id || selected.id}`}>
-                    漏洞详情 <ArrowUpRightIcon data-icon="inline-end" />
+                    Finding detail <ArrowUpRightIcon data-icon="inline-end" />
                   </Link>
                 </Button>
               </div>

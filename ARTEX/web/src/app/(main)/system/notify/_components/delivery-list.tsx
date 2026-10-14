@@ -65,7 +65,7 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
             <SelectValue placeholder="All channels" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">全部渠道</SelectItem>
+            <SelectItem value="all">All channels</SelectItem>
             {channels.map((c) => (
               <SelectItem key={c.id} value={String(c.id)}>
                 {c.name}
@@ -84,7 +84,7 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
             <SelectValue placeholder="All states" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">全部状态</SelectItem>
+            <SelectItem value="all">All states</SelectItem>
             {["pending", "sending", "sent", "failed", "skipped"].map((s) => (
               <SelectItem key={s} value={s}>
                 {statusMeta("delivery", s).label}
@@ -93,21 +93,21 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
           </SelectContent>
         </Select>
         <Button size="sm" variant="outline" onClick={load} disabled={loading}>
-          <RefreshCwIcon className={loading ? "animate-spin" : ""} /> 刷新
+          <RefreshCwIcon className={loading ? "animate-spin" : ""} /> Refresh
         </Button>
-        <span className="text-muted-foreground ml-auto text-xs">共 {total} 条</span>
+        <span className="text-muted-foreground ml-auto text-xs">Total {total} </span>
       </div>
 
       <Card className="py-0">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-40">时间</TableHead>
-              <TableHead>漏洞</TableHead>
-              <TableHead className="w-40">渠道</TableHead>
-              <TableHead className="w-24">状态</TableHead>
-              <TableHead className="w-16">尝试</TableHead>
-              <TableHead>错误</TableHead>
+              <TableHead className="w-40">Time</TableHead>
+              <TableHead>Finding</TableHead>
+              <TableHead className="w-40">Channel</TableHead>
+              <TableHead className="w-24">State</TableHead>
+              <TableHead className="w-16">Attempts</TableHead>
+              <TableHead>Error</TableHead>
               <TableHead className="w-20" />
             </TableRow>
           </TableHeader>
@@ -132,7 +132,7 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
                       <span className="truncate text-sm">{d.title || "(no title)"}</span>
                       {d.event_kind === "finding_status_changed" && (
                         <Badge variant="outline" className="shrink-0">
-                          状态变更
+                          State changes
                         </Badge>
                       )}
                     </div>
@@ -149,7 +149,7 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
                     {/* 只有失败/跳过的才给重发入口：已送达的重发会造成重复推送。 */}
                     {(d.state === "failed" || d.state === "skipped") && (
                       <Button size="sm" variant="outline" onClick={() => retry(d.id)}>
-                        <RotateCcwIcon /> 重发
+                        <RotateCcwIcon /> Resend
                       </Button>
                     )}
                   </TableCell>
@@ -163,13 +163,13 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
       {maxPage > 1 && (
         <div className="flex items-center justify-end gap-2">
           <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-            上一页
+            Previous
           </Button>
           <span className="text-muted-foreground text-sm">
             {page} / {maxPage}
           </span>
           <Button size="sm" variant="outline" disabled={page >= maxPage} onClick={() => setPage((p) => p + 1)}>
-            下一页
+            Next
           </Button>
         </div>
       )}

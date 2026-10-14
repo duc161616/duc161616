@@ -76,7 +76,10 @@ services:
       - "127.0.0.1:8787:8787"
     volumes:
       - ./artex-data:/app/data
-      - ../ARTEX/skills:/app/skills
+      # Skill dir là OVERLAY ở ../skills, không phải ../ARTEX/skills: giữ mirror
+      # upstream sạch, và cho bạn chỗ thêm skill mới. Nội dung = 3 skill upstream
+      # (đã sửa frontmatter hỏng của scopesentry) + skill bạn tự thêm. Xem ../skills/README.md
+      - ../skills:/app/skills
     # No egress network: this container cannot reach the internet except
     # through bbguard. Self-update is unreachable too, which is intended —
     # it pulls release binaries from a repository nobody maintains any more.

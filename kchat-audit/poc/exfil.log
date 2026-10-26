@@ -1,2 +1,2 @@
-{"origin":"http://127.0.0.2:8098","via":"?via=302&persist","hasDesktopAPI":"object","hasAuthManager":"object","appInfo":{"name":"Electron","version":"37.6.1"},"token":{"token":"IK_ACCESS_TOKEN_SANDBOX_abc123"}}
-{"origin":"http://127.0.0.2:8098","via":"","hasDesktopAPI":"object","hasAuthManager":"object","appInfo":{"name":"Electron","version":"37.6.1"},"token":{"token":"IK_ACCESS_TOKEN_SANDBOX_abc123"}}
+{"origin":"http://127.0.0.2:8098","search":"?via=iframe","hasDesktopAPI":"undefined","hasAuthManager":"undefined","tokenErr":"TypeError: Cannot read properties of undefined (reading 'tokenRequest')"}
+{"origin":"http://127.0.0.2:8098","getUserMedia":"DENIED NotFoundError","notification":"denied"}

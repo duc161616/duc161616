@@ -121,3 +121,14 @@ Arbitrary native code execution as the desktop user (persistent, survives restar
 - Source + build: `/tmp/claude-0/.../scratchpad/target/desktop-kChat` (`dist/` built)
 - Lab: `/tmp/claude-0/.../scratchpad/lab` (servers, userData at `xdg/Electron`, `electron.log`)
 - PoC + logs committed under `kchat-audit/poc/`
+
+---
+
+## Attack-chain diagram
+
+`kchat-audit/rce-attack-chain.svg` — the realistic vector drawn end to end: a
+same-tab navigation out of the kChat origin (integration authorize flow, which
+redirects on both Allow and Deny), the server view's `webContents` keeping the
+`externalAPI.js` preload across the origin change, the three unauthenticated IPC
+handlers, and the kMeet window loading `static/kmeet.js` from the attacker as
+`currentServer`. Also published as a page: https://claude.ai/artifact/6pzCd9nNksHtxnX1UTNMhL

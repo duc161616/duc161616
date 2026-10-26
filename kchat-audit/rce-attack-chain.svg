@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 880" role="img" aria-label="Attack chain: a same-tab navigation to an attacker URL inside a kChat server view keeps the externalAPI preload attached, which lets the attacker origin call three unauthenticated IPC handlers and end in native code execution through the kMeet call window.">
+        <style>
+  text { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; fill: #121820 }
+  .sans { font-family: "IBM Plex Sans", system-ui, sans-serif }
+  .lane { font-size: 10.5px; letter-spacing: 1.3px; fill: #586674 }
+  .mut { fill: #586674 } .hot { fill: #ab2318 } .b { font-weight: 600 }
+  .t9 { font-size: 9px } .t95 { font-size: 9.5px } .t105 { font-size: 10.5px }
+  .t11 { font-size: 11px } .t115 { font-size: 11.5px } .t125 { font-size: 12.5px } .t13 { font-size: 13px }
+  rect.surf { fill: #ffffff; stroke: #c7d0d8 }
+  rect.surf2 { fill: #e2e7ec; stroke: #c7d0d8 }
+  rect.hotbox { fill: #f7e4e1; stroke: #ab2318 }
+  rect.frame { fill: none; stroke: #c7d0d8 }
+  .edge { fill: none; stroke: #121820 } .edge-mut { fill: none; stroke: #586674 }
+  .edge-hot { fill: none; stroke: #ab2318 } .rule { stroke: #c7d0d8 }
+  .dash { stroke-dasharray: 4 3 } .dash5 { stroke-dasharray: 5 4 }
+  marker .mk { fill: #121820 } marker .mkh { fill: #ab2318 }
+</style>
+        <rect x="0" y="0" width="960" height="880" fill="#ffffff"/>
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="mk" d="M 0 1 L 9 5 L 0 9 z"/>
+          </marker>
+          <marker id="arh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="mkh" d="M 0 1 L 9 5 L 0 9 z"/>
+          </marker>
+        </defs>
+
+        <!-- ============ BAND 1 : victim action ============ -->
+        <text x="24" y="22" class="lane">1 · VICTIM, INSIDE THE DESKTOP APP</text>
+        <text x="24" y="38" class="t95 hot">needs confirming on the live webapp</text>
+
+        <rect x="24" y="48" width="300" height="66" rx="6" class="surf2"/>
+        <text x="40" y="74" class="sans t13 b">kChat → Integrations</text>
+        <text x="40" y="94" class="t105 mut">“Connect kMeet Recorder”</text>
+
+        <line x1="324" y1="81" x2="392" y2="81" class="edge" stroke-width="1.3" marker-end="url(#ar)"/>
+        <text x="358" y="74" text-anchor="middle" class="t95 mut">same tab</text>
+
+        <rect x="400" y="48" width="344" height="66" rx="6" class="surf2"/>
+        <text x="414" y="68" class="t105">/oauth/authorize?client_id=…&amp;redirect_uri=</text>
+        <text x="414" y="84" class="t105 b hot">https://attacker.tld/j</text>
+        <text x="414" y="104" class="sans t115 b">[ Allow ] or [ Deny ] — both navigate</text>
+
+        <!-- ============ BAND 2 : renderer ============ -->
+        <text x="24" y="150" class="lane">2 · RENDERER — THE SERVER VIEW’S webContents (NEVER RECREATED)</text>
+
+        <rect x="24" y="162" width="720" height="168" rx="8" class="frame dash5" stroke-width="1.2"/>
+        <text x="40" y="184" class="t105 mut">webContents #1 — preload bound to the VIEW, not to the page</text>
+
+        <rect x="44" y="198" width="288" height="54" rx="5" class="surf" stroke-width="1.3"/>
+        <text x="58" y="218" class="t95 mut">document</text>
+        <text x="58" y="238" class="sans t125 b">kchat.infomaniak.com</text>
+
+        <line x1="332" y1="225" x2="436" y2="225" class="edge-hot" stroke-width="1.5" marker-end="url(#arh)"/>
+        <text x="384" y="216" text-anchor="middle" class="t95 mut">will-navigate</text>
+        <text x="384" y="244" text-anchor="middle" class="t95 hot">no allow-list</text>
+
+        <rect x="436" y="198" width="288" height="54" rx="5" class="hotbox" stroke-width="1.5"/>
+        <text x="450" y="218" class="t95 mut">document</text>
+        <text x="450" y="238" class="sans t125 b hot">attacker.tld</text>
+
+        <line x1="800" y1="225" x2="750" y2="225" class="edge-hot dash" stroke-width="1.2" marker-end="url(#arh)"/>
+        <text x="775" y="217" text-anchor="middle" class="t9 mut">page</text>
+
+        <rect x="44" y="266" width="680" height="46" rx="5" class="surf2"/>
+        <text x="58" y="286" class="t115 b">window.desktopAPI · window.authManager</text>
+        <text x="58" y="303" class="t95 mut">still exposed after the origin change — webContentEvents.ts:82</text>
+
+        <!-- ============ ATTACKER LANE ============ -->
+        <rect x="800" y="162" width="152" height="640" rx="8" class="surf" stroke-width="1.2" stroke="#ab2318"/>
+        <text x="814" y="184" class="t95 hot" letter-spacing="1.1">ATTACKER HOST</text>
+        <text x="814" y="202" class="t115 b">attacker.tld</text>
+        <line x1="814" y1="212" x2="938" y2="212" class="rule"/>
+        <text x="814" y="250" class="t95 mut">serves landing</text>
+        <text x="814" y="264" class="t95 mut">page</text>
+        <text x="814" y="399" class="t95 hot">token received</text>
+        <text x="814" y="718" class="t95 hot">serves payload</text>
+
+        <!-- ============ BAND 3 : main process ============ -->
+        <text x="24" y="352" class="lane">3 · MAIN PROCESS — IPC HANDLERS WITH NO SENDER CHECK</text>
+
+        <path d="M 48 312 V 571" class="edge-mut" stroke-width="1.2"/>
+        <path d="M 48 403 H 80" class="edge-mut" stroke-width="1.2" marker-end="url(#ar)"/>
+        <path d="M 48 487 H 80" class="edge-mut" stroke-width="1.2" marker-end="url(#ar)"/>
+        <path d="M 48 571 H 80" class="edge-mut" stroke-width="1.2" marker-end="url(#ar)"/>
+
+        <rect x="84" y="366" width="484" height="74" rx="6" class="surf"/>
+        <text x="100" y="390" class="t115 b">TOKEN_REQUEST</text>
+        <text x="100" y="409" class="sans t115">returns the stored Infomaniak OAuth access token</text>
+        <text x="100" y="427" class="t95 mut">viewManager.ts:111</text>
+
+        <line x1="568" y1="403" x2="796" y2="403" class="edge-hot" stroke-width="1.4" marker-end="url(#arh)"/>
+        <text x="682" y="394" text-anchor="middle" class="t95 hot">POST token</text>
+
+        <rect x="84" y="450" width="484" height="74" rx="6" class="surf"/>
+        <text x="100" y="474" class="t115 b">UPDATE_TEAMS</text>
+        <text x="100" y="493" class="sans t115">attacker.tld written to config.json as the only server</text>
+        <text x="100" y="511" class="t95 mut">initialize.ts:320 — survives restart, reloaded as a server view</text>
+
+        <line x1="568" y1="487" x2="584" y2="487" class="rule" stroke-width="1.2"/>
+        <rect x="584" y="450" width="188" height="74" rx="6" class="surf2 dash"/>
+        <text x="596" y="474" class="t95">earlier “Allow” now</text>
+        <text x="596" y="490" class="t95">covers this origin:</text>
+        <text x="596" y="506" class="t95 hot">camera + mic, no prompt</text>
+
+        <rect x="84" y="534" width="484" height="74" rx="6" class="surf"/>
+        <text x="100" y="558" class="t115 b">CALL_OPEN_WINDOW</text>
+        <text x="100" y="577" class="sans t115">opens the kMeet call window</text>
+        <text x="100" y="595" class="t95 mut">initialize.ts:326 · desktopAPI.openKmeetCallWindow()</text>
+
+        <!-- ============ BAND 4 : payload window ============ -->
+        <text x="24" y="658" class="lane">4 · THE WINDOW THAT RUNS THE PAYLOAD</text>
+
+        <path d="M 326 608 V 668" class="edge" stroke-width="1.3" marker-end="url(#ar)"/>
+        <text x="336" y="644" class="t95 mut">spawns</text>
+
+        <rect x="84" y="672" width="484" height="96" rx="6" class="surf" stroke="#121820" stroke-width="1.5"/>
+        <text x="100" y="694" class="t11 b">kchat-desktop://renderer/call.html</text>
+        <text x="100" y="713" class="t95">nodeIntegration: true · contextIsolation: false · webSecurity: false</text>
+        <text x="100" y="730" class="t95 mut">call.html CSP sets img-src / style-src / media-src — no script-src</text>
+        <text x="100" y="750" class="t95 b hot">script.src = ${currentServer.url}static/kmeet.js → attacker.tld</text>
+
+        <line x1="796" y1="724" x2="572" y2="724" class="edge-hot dash" stroke-width="1.4" marker-end="url(#arh)"/>
+        <text x="684" y="715" text-anchor="middle" class="t95 hot">GET /static/kmeet.js</text>
+
+        <path d="M 326 768 V 790" class="edge-hot" stroke-width="1.5" marker-end="url(#arh)"/>
+        <text x="336" y="784" class="t95 hot">runs</text>
+
+        <rect x="84" y="792" width="484" height="64" rx="6" class="hotbox" stroke-width="1.8"/>
+        <text x="100" y="816" class="sans t125 b hot">Native code execution on the victim’s machine</text>
+        <text x="100" y="837" class="t95">require('child_process').execSync('id') → uid=0(root)  [sandbox run]</text>
+      </svg>
